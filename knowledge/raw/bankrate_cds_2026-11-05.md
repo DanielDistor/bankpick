@@ -721,30 +721,6 @@ Show more details
 
 Backed by the financial expertise of Goldman Sachs.
 
-Barclays CD
-
-4.5
-
-Bankrate score: 4.5 out of 5Member FDIC
-
-APY as of 11/5/2026
-    4.75%
-
-Min. depositMinimum deposit
-    $0
-
-Term
-    2 year
-
-Bankrate score
-    
-
-4.5/5Bankrate score: 4.5 out of 5
-
-Next
-
-Show more details
-
 Marcus by Goldman Sachs Rate Bump CD
 
 4.8
@@ -871,7 +847,7 @@ Next
 
 Show more details
 
-Showing 7 of 7
+Showing 6 of 6
 
 ## Find an APY that is 500x higher than big banks
 
@@ -2074,6 +2050,123 @@ Date| Marcus by Goldman Sachs APY| National average APY
 11/25/2025| 3.95%| N/A  
 11/18/2025| 3.95%| N/A  
 11/11/2025| 3.95%| N/A  
+  
+### Barclays CD
+
+[](https://www.bankrate.com/banking/reviews/barclays/?wealthPostReviewModal=CD)
+
+Member FDIC4.5
+
+Bankrate score: 4.5 out of 5
+
+[Read review, opens in a new tab](https://www.bankrate.com/banking/reviews/barclays/?wealthPostReviewModal=CD)
+
+APY as of 11/5/2026
+    4.75%
+
+Min. opening balanceMinimum opening balance
+    $0
+
+Term
+    2 year
+
+#### Why Barclays:
+
+Barclays offers solid to competitive yields on its CDs and doesn’t require a minimum opening deposit. It also allows a long grace period for deciding what to do with your funds once a CD matures — a full 14 days.
+
+Show details
+
+Pros & consAccount detailsRate history
+
+#### Pros
+
+  - No minimum deposit for any of the CDs.
+  - Competitive yields across CDs.
+  - Long grace period of 14 days.
+
+
+
+#### Cons
+
+  - No specialty CDs available.
+
+
+
+Offer valid as of
+    11/5/2026
+
+Minimum deposit
+    $0
+
+Early withdrawal penalty for 2 year CD
+    90 days
+
+#### Rate history for Barclays CD accounts
+
+See how rates for this account have changed over time. Interact with the trend lines to view APY by date.
+
+How do we get this data?
+
+Barclays APY
+
+National average APY
+
+See table view
+
+Date| Barclays APY| National average APY  
+---|---|---  
+11/03/2026| 4.75%| 1.88%  
+10/27/2026| 4.75%| 1.91%  
+10/20/2026| 4.75%| 1.91%  
+10/13/2026| 4.75%| 1.91%  
+10/06/2026| 4.35%| 1.91%  
+09/29/2026| 4.35%| 1.82%  
+09/22/2026| 4.35%| 1.82%  
+09/15/2026| 4.35%| 1.82%  
+09/08/2026| 3.00%| 1.82%  
+09/01/2026| 3.00%| 1.82%  
+08/25/2026| 3.00%| 1.81%  
+08/18/2026| 3.00%| 1.81%  
+08/11/2026| 3.00%| 1.81%  
+08/04/2026| 3.00%| 1.81%  
+07/28/2026| 3.00%| 1.79%  
+07/21/2026| 3.00%| 1.79%  
+07/14/2026| 3.00%| 1.79%  
+07/07/2026| 3.00%| 1.79%  
+06/30/2026| 3.00%| 1.77%  
+06/23/2026| 3.00%| 1.77%  
+06/16/2026| 3.00%| 1.77%  
+06/09/2026| 3.00%| 1.77%  
+06/02/2026| 3.00%| 1.77%  
+05/26/2026| 3.00%| 1.76%  
+05/19/2026| 3.00%| 1.76%  
+05/12/2026| 3.00%| 1.76%  
+05/05/2026| 3.00%| 1.76%  
+04/28/2026| 3.00%| 1.74%  
+04/21/2026| 3.00%| 1.74%  
+04/14/2026| 3.00%| 1.74%  
+04/07/2026| 3.00%| 1.74%  
+03/31/2026| 3.00%| 1.73%  
+03/24/2026| 3.00%| 1.73%  
+03/17/2026| 3.00%| 1.73%  
+03/10/2026| 3.00%| 1.73%  
+03/03/2026| 3.00%| 1.73%  
+02/24/2026| 3.00%| 1.72%  
+02/17/2026| 2.50%| 1.72%  
+02/10/2026| 2.50%| 1.72%  
+02/03/2026| 2.50%| 1.72%  
+01/27/2026| 2.50%| 1.70%  
+01/20/2026| 2.50%| 1.70%  
+01/13/2026| 2.50%| 1.70%  
+01/06/2026| 2.50%| 1.70%  
+12/30/2025| 2.50%| 1.71%  
+12/23/2025| 2.50%| 1.71%  
+12/16/2025| 2.50%| 1.71%  
+12/09/2025| 3.00%| 1.71%  
+12/02/2025| 3.00%| 1.71%  
+11/25/2025| 3.00%| N/A  
+11/18/2025| 3.00%| N/A  
+11/11/2025| 3.00%| N/A  
   
 ##  How Bankrate works
 
