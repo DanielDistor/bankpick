@@ -16,15 +16,16 @@ When the Fed raises or lowers interest rates, how do major banks respond with th
 pricing? Which banks pass through rate changes fastest? Who is winning deposits?
 
 ## Tech Stack
-- **Data Warehouse:** Snowflake (AWS US East 1)
-- **Transformation:** dbt (raw → staging → mart)
-- **Orchestration:** GitHub Actions (scheduled)
-- **Dashboard:** Streamlit (deployed to Streamlit Community Cloud)
+- **Data Warehouse:** DuckDB (free, file-based; migrated from Snowflake after the trial ended)
+- **Transformation:** dbt with dbt-duckdb (raw → staging → mart)
+- **Orchestration:** GitHub Actions (weekly `refresh-data.yml` commits mart CSVs to `dashboard/data/`; `keep-alive.yml` keeps the app awake)
+- **Dashboard:** Streamlit (Community Cloud) reading `dashboard/data/*.csv` via DuckDB; no secrets needed
+- **Constraint:** everything must stay on free tiers (no paid APIs or expiring trials)
 - **IDE:** Cursor + Claude Code + Superpowers
 
 ## Data Sources
 - **Source 1 (API):** FRED API — Federal Reserve rate data, Treasury yields, macro indicators
-- **Source 2 (Scrape):** Bank deposit rates from Bankrate or individual bank websites
+- **Source 2 (Scrape):** Bank deposit rates from Bankrate (requests + html2text)
 
 ## Star Schema
 - **Fact table:** deposit rates over time (bank, product type, rate, date)
@@ -66,4 +67,4 @@ deposit-pricing-analytics-banking/
 ```
 
 ## Credentials
-All credentials (Snowflake, FRED API key) are stored in `.env` and never committed to git.
+The only credential is the free FRED API key, stored in `.env` locally and as a GitHub Actions secret, never committed to git.

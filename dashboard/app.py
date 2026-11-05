@@ -1,8 +1,10 @@
-import streamlit as st
-import snowflake.connector
+from pathlib import Path
+
+import duckdb
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import streamlit as st
 
 st.set_page_config(
     page_title="Deposit Pricing Analytics",
@@ -10,30 +12,25 @@ st.set_page_config(
     layout="wide",
 )
 
-def _new_connection():
-    return snowflake.connector.connect(
-        account=st.secrets["snowflake"]["account"],
-        user=st.secrets["snowflake"]["user"],
-        password=st.secrets["snowflake"]["password"],
-        warehouse=st.secrets["snowflake"]["warehouse"],
-        database=st.secrets["snowflake"]["database"],
-        schema=st.secrets["snowflake"]["schema"],
-    )
+# Mart tables exported by the weekly GitHub Actions pipeline (dbt on DuckDB).
+DATA_DIR = Path(__file__).resolve().parent / "data"
 
 
 @st.cache_data(ttl=3600)
 def run_query(sql: str) -> pd.DataFrame:
-    conn = _new_connection()
+    conn = duckdb.connect()  # in-memory; reads the CSVs directly
     try:
-        cur = conn.cursor()
-        cur.execute(sql)
-        cols = [desc[0].lower() for desc in cur.description]
-        return pd.DataFrame(cur.fetchall(), columns=cols)
+        for table in ["fact_deposit_rates", "dim_bank", "dim_product", "fed_funds_history"]:
+            conn.execute(
+                f"CREATE VIEW {table} AS SELECT * FROM read_csv_auto('{DATA_DIR / (table + '.csv')}')"
+            )
+        return conn.execute(sql).df()
     finally:
         conn.close()
 
 
 def load_fact_data() -> pd.DataFrame:
+    # Latest snapshot only: the most recent scrape per source and product type.
     return run_query("""
         SELECT
             b.bank_name,
@@ -46,9 +43,10 @@ def load_fact_data() -> pd.DataFrame:
             f.spread_pct,
             f.passthrough_pct,
             f.scrape_date
-        FROM DEPOSIT_ANALYTICS.MART.FACT_DEPOSIT_RATES f
-        JOIN DEPOSIT_ANALYTICS.MART.DIM_BANK b    ON b.bank_key    = f.bank_key
-        JOIN DEPOSIT_ANALYTICS.MART.DIM_PRODUCT p ON p.product_key = f.product_key
+        FROM fact_deposit_rates f
+        JOIN dim_bank b    ON b.bank_key    = f.bank_key
+        JOIN dim_product p ON p.product_key = f.product_key
+        QUALIFY f.scrape_date = MAX(f.scrape_date) OVER (PARTITION BY f.source_name, p.product_name)
         ORDER BY f.apy_pct DESC
     """)
 
@@ -56,8 +54,7 @@ def load_fact_data() -> pd.DataFrame:
 def load_fred_history() -> pd.DataFrame:
     return run_query("""
         SELECT date_day, rate_pct, series_name
-        FROM DEPOSIT_ANALYTICS.STAGING.STG_FRED_OBSERVATIONS
-        WHERE series_id = 'FEDFUNDS'
+        FROM fed_funds_history
         ORDER BY date_day
     """)
 

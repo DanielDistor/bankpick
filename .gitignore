@@ -32,5 +32,6 @@ Thumbs.db
 .vscode/
 .claude/
 
-# dbt profiles
-dbt/profiles.yml
+
+# Local DuckDB warehouse (rebuilt every run; marts are exported to dashboard/data/)
+/data/

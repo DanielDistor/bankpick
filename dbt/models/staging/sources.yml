@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: raw
-    database: DEPOSIT_ANALYTICS
+    database: deposit_analytics
     schema: RAW
     tables:
       - name: fred_observations

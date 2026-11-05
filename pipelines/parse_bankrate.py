@@ -1,13 +1,13 @@
-import os
 import re
 from datetime import date
 from pathlib import Path
-from dotenv import load_dotenv
-import snowflake.connector
 
-load_dotenv()
+try:
+    from pipelines.warehouse import connect
+except ImportError:  # run as `python pipelines/parse_bankrate.py`
+    from warehouse import connect
 
-RAW_DIR = Path(__file__).parent.parent / "knowledge" / "raw"
+RAW_DIR = Path(__file__).resolve().parent.parent / "knowledge" / "raw"
 
 BANK_NAME_MAP = {
     "sofi": "SoFi",
@@ -57,8 +57,12 @@ CD_TERM_MAP = {
 APY_RE = re.compile(r'(\d+\.\d+)\s*%\s*(?:APY|apy)', re.IGNORECASE)
 TABLE_ROW_RE = re.compile(r'\|\s*([^|]+?)\s*\|\s*(\d+\.\d+)\s*%', re.IGNORECASE)
 DATE_RE = re.compile(r'^\d{2}[/\-]\d{2}[/\-]\d{4}$')
+# Matches both linked and plain bank names:
+#   - [Bank Name](url) — X.XX% APY, ...
+#   - Bank Name — X.XX% – Y.YY% APY, ...
 LIST_ITEM_RE = re.compile(
-    r'-\s+\[([^\]]+)\]\([^)]+\)\s*[—–\-]+\s*(?:\d+\.\d+%\s*[–\-]+\s*)?(\d+\.\d+)%\s*APY',
+    r'^\s*-\s+(?:\[([^\]]+)\]\([^)]+\)|([^\[\]—–]+?))\s*[—–\-]+\s*'
+    r'(?:\d+\.\d+%\s*[–\-]+\s*)?(\d+\.\d+)%\s*APY',
     re.IGNORECASE
 )
 TERM_NAME_RE = re.compile(r'^\d+\s*(month|year|week|day)s?$', re.IGNORECASE)
@@ -90,7 +94,8 @@ def extract_rates_from_markdown(markdown: str, product_type: str, scrape_date: d
     for line in markdown.splitlines():
         m = LIST_ITEM_RE.search(line)
         if m:
-            bank_raw, apy_str = m.group(1).strip(), m.group(2)
+            bank_raw = (m.group(1) or m.group(2)).replace("\\*", "*").strip()
+            apy_str = m.group(3)
             bank = normalize_bank_name(bank_raw)
             if not bank:
                 continue
@@ -173,45 +178,31 @@ def extract_rates_from_markdown(markdown: str, product_type: str, scrape_date: d
     return rows
 
 
-def load_to_snowflake(rows: list[dict]) -> None:
+def load_to_duckdb(rows: list[dict]) -> None:
     if not rows:
-        print("No rows to load.")
-        return
+        raise SystemExit("No Bankrate rows parsed; refusing to load an empty table.")
 
-    conn = snowflake.connector.connect(
-        account=os.getenv("SNOWFLAKE_ACCOUNT"),
-        user=os.getenv("SNOWFLAKE_USER"),
-        password=os.getenv("SNOWFLAKE_PASSWORD"),
-        role="ACCOUNTADMIN",
-    )
-    cur = conn.cursor()
+    conn = connect()
     try:
-        cur.execute("USE WAREHOUSE COMPUTE_WH")
-        cur.execute("USE DATABASE DEPOSIT_ANALYTICS")
-        cur.execute("USE SCHEMA RAW")
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS BANKRATE_RATES (
-                bank_name    VARCHAR(100),
-                product_type VARCHAR(20),
+        conn.execute("""
+            CREATE OR REPLACE TABLE raw.bankrate_rates (
+                bank_name    VARCHAR,
+                product_type VARCHAR,
                 term_months  INTEGER,
-                apy_pct      FLOAT,
+                apy_pct      DOUBLE,
                 scrape_date  DATE,
-                loaded_at    TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
+                loaded_at    TIMESTAMP DEFAULT current_timestamp
             )
         """)
-        cur.execute("TRUNCATE TABLE IF EXISTS BANKRATE_RATES")
-        cur.executemany(
-            """INSERT INTO BANKRATE_RATES (bank_name, product_type, term_months, apy_pct, scrape_date)
-               VALUES (%s, %s, %s, %s, %s)""",
+        conn.executemany(
+            """INSERT INTO raw.bankrate_rates (bank_name, product_type, term_months, apy_pct, scrape_date)
+               VALUES (?, ?, ?, ?, ?)""",
             [(r["bank_name"], r["product_type"], r["term_months"], r["apy_pct"], r["scrape_date"])
              for r in rows],
         )
-        conn.commit()
-        cur.execute("SELECT COUNT(*) FROM BANKRATE_RATES")
-        count = cur.fetchone()[0]
-        print(f"Loaded {count} rows to DEPOSIT_ANALYTICS.RAW.BANKRATE_RATES")
+        count = conn.execute("SELECT COUNT(*) FROM raw.bankrate_rates").fetchone()[0]
+        print(f"Loaded {count} rows to raw.bankrate_rates")
     finally:
-        cur.close()
         conn.close()
 
 
@@ -234,7 +225,7 @@ def main():
         all_rows.extend(rows)
 
     print(f"\nTotal: {len(all_rows)} rows across all files")
-    load_to_snowflake(all_rows)
+    load_to_duckdb(all_rows)
 
 
 if __name__ == "__main__":

@@ -115,3 +115,20 @@ def test_extract_cd_range_apy():
     apys = [r["apy_pct"] for r in rows]
     assert 4.15 in apys
     assert 4.00 in apys
+
+
+SAMPLE_PLAIN_LIST_MARKDOWN = """
+  - CIT Bank — 4.35% APY, $100 minimum deposit
+  - E\\*TRADE — 4.20% – 4.80% APY, No minimum deposit — 6 months - 5 years
+  - Decent to competitive APYs.
+"""
+
+
+def test_extract_plain_list_items_from_requests_scrape():
+    """html2text output (free scraper) has unlinked bank names in list items."""
+    savings = extract_rates_from_markdown(SAMPLE_PLAIN_LIST_MARKDOWN, "savings", date(2026, 11, 5))
+    by_bank = {r["bank_name"]: r["apy_pct"] for r in savings}
+    assert by_bank == {"CIT Bank": 4.35, "E*TRADE": 4.80}
+
+    cds = extract_rates_from_markdown(SAMPLE_PLAIN_LIST_MARKDOWN, "cd", date(2026, 11, 5))
+    assert {r["bank_name"]: r["term_months"] for r in cds}["E*TRADE"] == 6

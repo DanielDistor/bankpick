@@ -19,12 +19,14 @@ This project tracks how major U.S. banks responded to Federal Reserve rate chang
 | Layer | Tool |
 |-------|------|
 | IDE | Cursor + Claude Code |
-| Data Warehouse | Snowflake |
-| Transformation | dbt |
-| Orchestration | GitHub Actions (weekly schedule) |
+| Data Warehouse | DuckDB (free, file-based) |
+| Transformation | dbt (`dbt-duckdb`) |
+| Orchestration | GitHub Actions (weekly refresh + keep-alive) |
 | Dashboard | Streamlit (Community Cloud) |
-| Knowledge Base | Claude Code + Firecrawl |
+| Knowledge Base | Claude Code |
 | Version Control | Git + GitHub |
+
+The whole stack runs on free tiers with no expiring trials or paid APIs, so the live dashboard stays up indefinitely.
 
 ---
 
@@ -32,8 +34,8 @@ This project tracks how major U.S. banks responded to Federal Reserve rate chang
 
 | Source | Type | Destination |
 |--------|------|-------------|
-| [FRED API](https://fred.stlouisfed.org/) | REST API | `DEPOSIT_ANALYTICS.RAW.FRED_OBSERVATIONS` |
-| [Bankrate](https://www.bankrate.com/) | Firecrawl scrape | `knowledge/raw/` → `DEPOSIT_ANALYTICS.RAW.BANKRATE_RATES` |
+| [FRED API](https://fred.stlouisfed.org/) | REST API (free key; keyless CSV fallback) | `raw.fred_observations` |
+| [Bankrate](https://www.bankrate.com/) | Web scrape (`requests` + `html2text`) | `knowledge/raw/` → `raw.bankrate_rates` |
 
 FRED series loaded: Fed Funds Rate (monthly + daily), 3-Month/1-Year/2-Year/5-Year/10-Year Treasury yields, Discount Window Rate.
 
@@ -45,9 +47,9 @@ FRED series loaded: Fed Funds Rate (monthly + daily), 3-Month/1-Year/2-Year/5-Ye
 
 ```mermaid
 flowchart LR
-    FRED[FRED API\nFederal Reserve] -->|extract_fred.py\nGitHub Actions| RAW_FRED[(RAW.FRED_OBSERVATIONS\nSnowflake)]
-    BANKRATE[Bankrate\nFirecrawl Scrape] -->|extract_bankrate.py\nGitHub Actions| KB[knowledge/raw/\nMarkdown Files]
-    KB -->|parse_bankrate.py| RAW_BANK[(RAW.BANKRATE_RATES\nSnowflake)]
+    FRED[FRED API\nFederal Reserve] -->|extract_fred.py\nGitHub Actions| RAW_FRED[(raw.fred_observations\nDuckDB)]
+    BANKRATE[Bankrate\nWeb Scrape] -->|extract_bankrate.py\nGitHub Actions| KB[knowledge/raw/\nMarkdown Files]
+    KB -->|parse_bankrate.py| RAW_BANK[(raw.bankrate_rates\nDuckDB)]
     RAW_FRED --> STG_FRED[stg_fred_observations\ndbt Staging]
     RAW_BANK --> STG_BANK[stg_bankrate_rates\ndbt Staging]
     STG_FRED --> FACT[fact_deposit_rates\ndbt Mart]
@@ -58,7 +60,8 @@ flowchart LR
     DIM_BANK --> FACT
     DIM_PROD --> FACT
     DIM_DATE --> FACT
-    FACT -->|Streamlit| DASH[Dashboard\nStreamlit Cloud]
+    FACT -->|export_marts.py| CSV[dashboard/data/*.csv\ncommitted weekly]
+    CSV -->|DuckDB SQL| DASH[Dashboard\nStreamlit Cloud]
 ```
 
 ![Pipeline Diagram](docs/pipeline_diagram.png)
@@ -111,9 +114,11 @@ erDiagram
 
 ## Key Insights
 
-- **Pass-through rate explains the APY gap:** The Fed funds rate sets the benchmark. Banks decide how much of it to share with depositors. Online banks like SoFi pass through 118% of the Fed rate, meaning their savings APY exceeds the Fed rate itself. JPMorgan Chase, Bank of America, and Wells Fargo pass through under 1%, keeping nearly the entire rate hike as profit margin.
-- **Every online bank outperforms every traditional bank on savings APY:** SoFi leads at 4.30% APY. All online banks in this dataset fall between 3.80% and 4.30%. JPMorgan Chase, BofA, and Wells Fargo sit at 0.01%.
-- **The dollar impact on $10,000 is immediate:** A $10,000 deposit at SoFi earns $430 per year. The same deposit at JPMorgan Chase earns $1 per year. Same deposit, same year, different bank.
+_Figures as of the November 2026 refresh (Fed funds rate 3.88%); the dashboard updates weekly._
+
+- **Pass-through rate explains the APY gap:** The Fed funds rate sets the benchmark. Banks decide how much of it to share with depositors. Top online banks now pass through 100% to 112% of the Fed rate, meaning their savings APY matches or exceeds the Fed rate itself. JPMorgan Chase, Bank of America, and Wells Fargo pass through under 1%, keeping nearly the entire rate as profit margin.
+- **Every online bank outperforms every traditional bank on savings APY:** CIT Bank leads at 4.35% APY, and every online bank in the dataset falls between 3.90% and 4.35%. JPMorgan Chase, BofA, and Wells Fargo sit at 0.01%, with Citibank at 0.04%.
+- **The dollar impact on $10,000 is immediate:** A $10,000 deposit at CIT Bank earns $435 per year. The same deposit at JPMorgan Chase earns $1 per year. Same deposit, same year, different bank.
 - **Compounding widens the gap over time:** The difference between a 4.30% APY and a 0.01% APY compounds significantly. Over 10 years, the gap between the best and worst savings account on $10,000 grows to over $5,000.
 - **Bank choice is the only variable a client controls:** The Fed rate moves on its own. The bank's pass-through policy is fixed. The only decision available to a client is which bank holds their deposit.
 
@@ -140,19 +145,23 @@ git clone https://github.com/DanielDistor/deposit-pricing-analytics-banking.git
 cd deposit-pricing-analytics-banking
 pip install -r requirements.txt
 
-# Configure credentials (.env file)
-# Required: SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_PASSWORD, FRED_API_KEY, FIRECRAWL_API_KEY
+# Optional: FRED_API_KEY in .env (free). Without it, FRED's keyless CSV endpoint is used.
+# No other credentials are needed. The warehouse is a local DuckDB file in data/.
 
-# Run extraction
+# Extract + load
 python pipelines/extract_fred.py
 python pipelines/extract_bankrate.py
 python pipelines/parse_bankrate.py
 
-# Run dbt
-cd dbt
-dbt run
-dbt test
+# Transform + test
+(cd dbt && dbt build --profiles-dir .)
+
+# Export marts for the dashboard, then run it
+python pipelines/export_marts.py
+streamlit run dashboard/app.py
 ```
+
+In production, `.github/workflows/refresh-data.yml` runs these same steps every Sunday and commits the refreshed CSVs, which triggers a Streamlit Cloud redeploy. `.github/workflows/keep-alive.yml` visits the app every 8 hours so it never sleeps.
 
 ---
 

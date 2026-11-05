@@ -1,0 +1,8 @@
+# DuckDB profile: free, file-based, no credentials. Safe to commit.
+deposit_pricing:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('DUCKDB_PATH', '../data/deposit_analytics.duckdb') }}"
+      threads: 4

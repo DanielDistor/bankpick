@@ -1,7 +1,14 @@
+import csv
+import io
 import os
+
 import requests
 from dotenv import load_dotenv
-import snowflake.connector
+
+try:
+    from pipelines.warehouse import connect
+except ImportError:  # run as `python pipelines/extract_fred.py`
+    from warehouse import connect
 
 load_dotenv()
 
@@ -28,64 +35,57 @@ def fetch_series(series_id: str) -> list[tuple]:
     ]
 
 
-def setup_snowflake(cur):
-    cur.execute("CREATE WAREHOUSE IF NOT EXISTS COMPUTE_WH WITH WAREHOUSE_SIZE='X-SMALL' AUTO_SUSPEND=60 AUTO_RESUME=TRUE")
-    cur.execute("USE WAREHOUSE COMPUTE_WH")
-    cur.execute("CREATE DATABASE IF NOT EXISTS DEPOSIT_ANALYTICS")
-    cur.execute("CREATE SCHEMA IF NOT EXISTS DEPOSIT_ANALYTICS.RAW")
-    cur.execute("USE DATABASE DEPOSIT_ANALYTICS")
-    cur.execute("USE SCHEMA RAW")
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS FRED_OBSERVATIONS (
-            series_id        VARCHAR(20),
+def fetch_series_keyless(series_id: str) -> list[tuple]:
+    """Fallback: FRED's public CSV download, which needs no API key."""
+    url = "https://fred.stlouisfed.org/graph/fredgraph.csv"
+    r = requests.get(url, params={"id": series_id, "cosd": OBSERVATION_START}, timeout=60)
+    r.raise_for_status()
+    reader = csv.reader(io.StringIO(r.text))
+    next(reader)  # header: observation_date,<SERIES_ID>
+    return [
+        (series_id, day, float(value))
+        for day, value in reader
+        if value not in ("", ".")
+    ]
+
+
+def load_rows(conn, rows: list[tuple]) -> None:
+    conn.execute("""
+        CREATE OR REPLACE TABLE raw.fred_observations (
+            series_id        VARCHAR,
             observation_date DATE,
-            value            FLOAT,
-            loaded_at        TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP(),
+            value            DOUBLE,
+            loaded_at        TIMESTAMP DEFAULT current_timestamp,
             PRIMARY KEY (series_id, observation_date)
         )
     """)
-
-
-def load_rows(cur, rows: list[tuple], batch_size: int = 1000):
-    cur.execute("TRUNCATE TABLE IF EXISTS FRED_OBSERVATIONS")
-    for i in range(0, len(rows), batch_size):
-        batch = rows[i : i + batch_size]
-        cur.executemany(
-            "INSERT INTO FRED_OBSERVATIONS (series_id, observation_date, value) VALUES (%s, %s, %s)",
-            batch,
-        )
+    conn.executemany(
+        "INSERT INTO raw.fred_observations (series_id, observation_date, value) VALUES (?, ?, ?)",
+        rows,
+    )
 
 
 def main():
-    print("Connecting to Snowflake...")
-    conn = snowflake.connector.connect(
-        account=os.getenv("SNOWFLAKE_ACCOUNT"),
-        user=os.getenv("SNOWFLAKE_USER"),
-        password=os.getenv("SNOWFLAKE_PASSWORD"),
-        role="ACCOUNTADMIN",
-    )
-    cur = conn.cursor()
+    fetch = fetch_series
+    if not FRED_API_KEY:
+        print("FRED_API_KEY not set; using FRED's keyless CSV endpoint "
+              "(free key: https://fred.stlouisfed.org/docs/api/api_key.html)")
+        fetch = fetch_series_keyless
+
+    all_rows: list[tuple] = []
+    for series_id in SERIES:
+        print(f"  Fetching {series_id}...", end=" ", flush=True)
+        rows = fetch(series_id)
+        all_rows.extend(rows)
+        print(f"{len(rows)} observations")
+
+    conn = connect()
     try:
-        print("Setting up Snowflake objects...")
-        setup_snowflake(cur)
-
-        all_rows: list[tuple] = []
-        for series_id in SERIES:
-            print(f"  Fetching {series_id}...", end=" ", flush=True)
-            rows = fetch_series(series_id)
-            all_rows.extend(rows)
-            print(f"{len(rows)} observations")
-
-        print(f"\nLoading {len(all_rows)} total rows to Snowflake...")
-        load_rows(cur, all_rows)
-        conn.commit()
-
-        cur.execute("SELECT COUNT(*) FROM FRED_OBSERVATIONS")
-        count = cur.fetchone()[0]
-        print(f"Verified: {count} rows in DEPOSIT_ANALYTICS.RAW.FRED_OBSERVATIONS")
-        print("Done!")
+        print(f"\nLoading {len(all_rows)} total rows to DuckDB...")
+        load_rows(conn, all_rows)
+        count = conn.execute("SELECT COUNT(*) FROM raw.fred_observations").fetchone()[0]
+        print(f"Verified: {count} rows in raw.fred_observations")
     finally:
-        cur.close()
         conn.close()
 
 

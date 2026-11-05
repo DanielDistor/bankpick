@@ -1,9 +1,12 @@
+# Pipeline + dbt (all free / open source)
 requests>=2.31.0
-snowflake-connector-python>=3.6.0
-firecrawl-py>=1.0.0
 python-dotenv>=1.0.0
-dbt-snowflake>=1.7.0
+html2text>=2024.2.26
+duckdb>=1.1.0
+dbt-duckdb>=1.8.0
+pytest>=8.0.0
+
+# Dashboard
 streamlit>=1.50.0,<2.0
-plotly>=5.18.0
 pandas>=2.0.0
-matplotlib>=3.7.0
+plotly>=5.18.0
