@@ -189,7 +189,7 @@ with tab1:
 
     st.dataframe(
         display_df.style.apply(_color_apy, subset=["APY (%)"]).format({"APY (%)": "{:.2f}%", "Pass-Through (%)": "{:.1f}%"}),
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )
     st.caption(
@@ -228,7 +228,7 @@ with tab1:
         margin=dict(r=20),
         yaxis=dict(categoryorder="total ascending"),
     )
-    st.plotly_chart(fig_rank, use_container_width=True)
+    st.plotly_chart(fig_rank, width="stretch")
 
 
 # ── Tab 2: What Your Money Earns ─────────────────────────────────────────────
@@ -292,10 +292,9 @@ with tab2:
         showlegend=True,
         margin=dict(r=120),
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     best = savings_df.iloc[-1]
-    worst = savings_df[savings_df["bank_type"] == "traditional"].iloc[0]
     st.markdown(
         f"""
         <div style="
@@ -397,7 +396,7 @@ with tab3:
         showlegend=True,
         margin=dict(r=60),
     )
-    st.plotly_chart(fig2, use_container_width=True)
+    st.plotly_chart(fig2, width="stretch")
 
     st.subheader("Pass-Through Rate: All Banks")
     table_df = pt_df[["bank_name", "bank_type", "apy_pct", "passthrough_pct"]].copy()
@@ -427,7 +426,7 @@ with tab3:
             "Pass-Through (%)": "{:.1f}%",
             "Annual Earnings on $10K": "${:,.0f}",
         }),
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )
 
@@ -463,9 +462,9 @@ with tab3:
         worst_earn = worst_apy / 100 * 10_000
         gap = best_earn - worst_earn
         st.info(
-            f"Dollar impact on \$10,000: {best['bank_name']} ({best_apy:.2f}% APY) earns \${best_earn:,.0f}/yr. "
-            f"{worst['bank_name']} ({worst_apy:.2f}% APY) earns \${worst_earn:,.0f}/yr. "
-            f"That is a \${gap:,.0f}/year difference on the same deposit."
+            f"Dollar impact on \\$10,000: {best['bank_name']} ({best_apy:.2f}% APY) earns \\${best_earn:,.0f}/yr. "
+            f"{worst['bank_name']} ({worst_apy:.2f}% APY) earns \\${worst_earn:,.0f}/yr. "
+            f"That is a \\${gap:,.0f}/year difference on the same deposit."
         )
 
 
@@ -591,7 +590,7 @@ with tab4:
                 yaxis_range=[deposit_amount * 0.95, fv_10 * 1.08],
                 showlegend=False,
             )
-            st.plotly_chart(fig_card, use_container_width=True)
+            st.plotly_chart(fig_card, width="stretch")
 
         st.divider()
 
@@ -612,7 +611,7 @@ with tab4:
         showlegend=False,
         margin=dict(t=40, b=20),
     )
-    st.plotly_chart(fig_apy, use_container_width=True)
+    st.plotly_chart(fig_apy, width="stretch")
 
     # ── Compound growth over 10 years ─────────────────────────────────────────
     years = list(range(0, 11))
@@ -674,4 +673,4 @@ with tab4:
         showlegend=True,
         margin=dict(r=180),
     )
-    st.plotly_chart(fig_growth, use_container_width=True)
+    st.plotly_chart(fig_growth, width="stretch")
