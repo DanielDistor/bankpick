@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Where to Grow It</title>
+<meta name="description" content="Type how much you're investing and see which high-yield savings account grows it the most. Real rates, refreshed daily.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23050605'/%3E%3Cpath d='M6 22 L13 15 L18 19 L26 9' stroke='%2322e07a' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- 1. ASK -->
+<section class="screen on" id="ask">
+  <form class="fade" id="askForm" novalidate>
+    <h1>How much are you looking to invest?</h1>
+    <p>We'll find where it grows the most.</p>
+    <label class="big-input"><span>$</span><input id="askInput" class="mono" value="25,000" inputmode="numeric" autocomplete="off" aria-label="Amount to invest" autofocus></label>
+    <div class="seg" role="radiogroup" aria-label="Monthly contributions">
+      <button type="button" class="seg-btn on" data-monthly="no" role="radio" aria-checked="true">No monthly contributions</button>
+      <button type="button" class="seg-btn" data-monthly="yes" role="radio" aria-checked="false">Add monthly</button>
+    </div>
+    <label class="monthly-input" id="monthlyWrap" hidden><span>$</span><input id="askMonthly" class="mono" value="500" inputmode="numeric" autocomplete="off" aria-label="Monthly contribution"><em>/ month</em></label>
+    <div><button class="go" type="submit">Show me →</button></div>
+  </form>
+</section>
+
+<!-- 2. LOADING -->
+<section class="screen" id="load" aria-live="polite">
+  <div class="steps">
+    <div class="step"><div class="dot"></div><div><div class="t">Checking the Fed rate</div><div class="sub" id="s1"></div></div><div class="r mono" id="r1"></div></div>
+    <div class="step"><div class="dot"></div><div><div class="t">Scanning bank rates</div><div class="sub" id="s2"></div></div><div class="r mono" id="r2"></div></div>
+    <div class="step"><div class="dot"></div><div><div class="t">Growing your money</div><div class="sub" id="s3"></div></div><div class="r mono" id="r3"></div></div>
+    <div class="bar"><i id="prog"></i></div>
+  </div>
+</section>
+
+<!-- 3. DASHBOARD -->
+<section class="screen" id="dash">
+  <div class="col">
+    <div class="bar-top">
+      <div class="pills">
+        <label class="amt"><span>$</span><input id="dashInput" class="mono" inputmode="numeric" autocomplete="off" aria-label="Amount to invest"></label>
+        <label class="amt"><span>+$</span><input id="dashMonthly" class="mono small" inputmode="numeric" autocomplete="off" aria-label="Monthly contribution"><em>/mo</em></label>
+      </div>
+      <div class="asof" id="asOf"></div>
+    </div>
+
+    <div class="answer">
+      <div class="eyebrow">Best place for your money</div>
+      <h2 id="ansH"></h2>
+      <div class="why" id="ansWhy"></div>
+      <div class="cta" id="ansCta"></div>
+      <div class="line" id="fallback" hidden></div>
+      <div class="line" id="treasury" hidden></div>
+    </div>
+
+    <div class="growth">
+      <div class="head">
+        <div><div class="big mono" id="gBig"></div><div class="cap" id="gCap"></div></div>
+        <div class="vs"><span id="gVsLabel">At Chase instead</span><b class="mono" id="gVs"></b></div>
+      </div>
+      <svg id="chart" viewBox="0 0 680 200" width="100%" role="img" aria-label="Growth over time"></svg>
+      <div class="tabs" id="tabs"></div>
+    </div>
+
+    <div class="list">
+      <div class="eyebrow">Other great options · first year</div>
+      <div id="rows"></div>
+    </div>
+
+    <div class="note" id="note" hidden></div>
+    <div class="foot">High-yield savings accounts, FDIC insured. Rates from Bankrate, refreshed daily. Not financial advice.</div>
+  </div>
+</section>
+
+<!-- Data failed to load -->
+<section class="screen" id="err">
+  <div class="fade err-box">
+    <h1>Rates are temporarily unavailable.</h1>
+    <p>Try again shortly.</p>
+  </div>
+</section>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
