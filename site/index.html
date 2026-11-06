@@ -15,6 +15,7 @@
 
 <!-- 1. ASK -->
 <section class="screen on" id="ask">
+  <div class="glow" aria-hidden="true"></div>
   <form class="fade" id="askForm" novalidate>
     <h1>How much are you looking to invest?</h1>
     <p>We'll find where it grows the most.</p>
@@ -26,6 +27,10 @@
     <label class="monthly-input" id="monthlyWrap" hidden><span>$</span><input id="askMonthly" class="mono" value="500" inputmode="numeric" autocomplete="off" aria-label="Monthly contribution"><em>/ month</em></label>
     <div><button class="go" type="submit">Show me →</button></div>
   </form>
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-cap">Savings interest rates · per year (APY)</div>
+    <div class="ticker-win"><div class="ticker-track mono" id="ticker"></div></div>
+  </div>
 </section>
 
 <!-- 2. LOADING -->
@@ -35,6 +40,15 @@
     <div class="step"><div class="dot"></div><div><div class="t">Scanning bank rates</div><div class="sub" id="s2"></div></div><div class="r mono" id="r2"></div></div>
     <div class="step"><div class="dot"></div><div><div class="t">Growing your money</div><div class="sub" id="s3"></div></div><div class="r mono" id="r3"></div></div>
     <div class="bar"><i id="prog"></i></div>
+  </div>
+</section>
+
+<!-- 2b. SHOWDOWN: big banks and runners-up get crossed out, the winner gets the check -->
+<section class="screen" id="elim" aria-live="polite">
+  <div class="elim">
+    <div class="el-head" id="elHead"></div>
+    <div class="el-cols"><div id="elColBank">Bank · your money in 10 yrs</div><div>Interest / year</div><div></div></div>
+    <div id="elCards"></div>
   </div>
 </section>
 
