@@ -72,13 +72,35 @@
       <div class="line" id="treasury" hidden></div>
     </div>
 
+    <div class="tiles" id="tiles"></div>
+
     <div class="growth">
       <div class="head">
         <div><div class="big mono" id="gBig"></div><div class="cap" id="gCap"></div></div>
         <div class="vs"><span id="gVsLabel">At Chase instead</span><b class="mono" id="gVs"></b></div>
       </div>
-      <svg id="chart" viewBox="0 0 680 200" width="100%" role="img" aria-label="Growth over time"></svg>
+      <div class="legend" id="gLegend"></div>
+      <div class="plot"><svg id="chart" viewBox="0 0 680 200" width="100%" role="img" aria-label="Growth over time"></svg><div class="tip" id="gTip" hidden></div></div>
       <div class="tabs" id="tabs"></div>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow">Your money vs. the big banks</div>
+      <p class="card-sub" id="bbSub"></p>
+      <div class="hbars" id="bigBars"></div>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow">Best online rate vs. the Fed · past year</div>
+      <p class="card-sub" id="trSub"></p>
+      <div class="legend" id="trLegend"></div>
+      <div class="plot"><svg id="trend" viewBox="0 0 680 220" width="100%" role="img" aria-label="Best online savings rate and the Fed funds rate over the past year"></svg><div class="tip" id="trTip" hidden></div></div>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow">Who's held the #1 rate · past year</div>
+      <p class="card-sub" id="ldSub"></p>
+      <div class="hbars" id="leaderBars"></div>
     </div>
 
     <div class="list">

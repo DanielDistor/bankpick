@@ -61,6 +61,28 @@ def compute_badge(history: History, bank: str, as_of: date) -> str | None:
     return None
 
 
+def _weekly_leaders(history: History) -> list[dict]:
+    """The highest-APY bank each Monday-week (latest point per bank per week)."""
+    weekly: dict[date, dict[str, float]] = defaultdict(dict)
+    for name, points in history.items():
+        for d, rate in sorted(points):
+            weekly[_week(d)][name] = rate
+    out = []
+    for week in sorted(weekly):
+        name, apy = min(weekly[week].items(), key=lambda kv: (-kv[1], kv[0]))
+        out.append({"week": week.isoformat(), "name": name, "apy": apy})
+    return out
+
+
+def _fred_since(conn, series_id: str, start: date) -> list[dict]:
+    rows = conn.execute(
+        """SELECT date_day, rate_pct FROM STAGING.stg_fred_observations
+           WHERE series_id = ? AND date_day >= ? ORDER BY date_day""",
+        [series_id, start.replace(day=1)],
+    ).fetchall()
+    return [{"date": d.isoformat(), "rate": round(float(r), 2)} for d, r in rows]
+
+
 def _latest_fred(conn, series_id: str) -> dict | None:
     row = conn.execute(
         """SELECT rate_pct, date_day FROM STAGING.stg_fred_observations
@@ -119,12 +141,19 @@ def build_payload(conn, today: date | None = None) -> dict:
         ).fetchall()
     ]
 
+    leaders = _weekly_leaders(history)
+    trend = {
+        "leaders": leaders,
+        "fed_funds": _fred_since(conn, "FEDFUNDS", date.fromisoformat(leaders[0]["week"])) if leaders else [],
+    }
+
     return {
         "as_of": as_of.isoformat(),
         "fed_funds": _latest_fred(conn, "FEDFUNDS"),
         "treasury_1y": _latest_fred(conn, "GS1"),
         "banks": banks,
         "big_banks": big_banks,
+        "trend": trend,
     }
 
 

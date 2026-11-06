@@ -158,3 +158,46 @@ a{color:inherit}
 .el-card.win .r{color:var(--green)}
 .el-card.gone{opacity:0;transform:translateY(-8px)}
 @media (prefers-reduced-motion:reduce){.glow,.go,.ticker-track,.el-card.x{animation:none}.el-card{transition:none}}
+
+/* dashboard: stat tiles */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:32px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.tile .k{font-size:11.5px;color:var(--muted);letter-spacing:.04em}
+.tile .v{font:700 22px "JetBrains Mono",monospace;margin-top:6px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tile .v.up{color:var(--green)}
+.tile .s{font-size:11.5px;color:var(--dim);margin-top:4px}
+
+/* cards + legends + tooltips */
+.card{margin-top:20px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px 24px}
+.card-sub{color:var(--muted);font-size:13.5px;line-height:1.5;margin-top:6px}
+.card-sub b{color:var(--text);font-weight:600}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:16px;height:0;border-top:2px solid;vertical-align:middle;margin-right:6px}
+.plot{position:relative}
+.tip{position:absolute;top:0;pointer-events:none;background:#0a0d0b;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;color:var(--muted);white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:2}
+.tip .d{color:var(--dim);margin-bottom:4px}
+.tip .row2{display:flex;align-items:center;gap:8px;margin-top:2px}
+.tip .row2 i{width:12px;border-top:2px solid}
+.tip .row2 b{color:var(--text);font:700 13px "JetBrains Mono",monospace}
+#trend{margin-top:12px;display:block;overflow:visible}
+
+/* horizontal bars */
+.hbars{margin-top:16px;display:grid;gap:10px}
+.hb{display:grid;grid-template-columns:140px 1fr 90px;gap:12px;align-items:center;font-size:13.5px}
+.hb .n{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb .track{height:10px;position:relative}
+.hb .fill{height:100%;border-radius:0 4px 4px 0;background:#2a332d;width:0;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+.hb.hi .n{color:var(--text);font-weight:600}
+.hb.hi .fill{background:var(--green)}
+.hb .v{text-align:right;font:700 13px "JetBrains Mono",monospace;color:var(--text)}
+.hb .v small{display:block;font:500 11px Inter;color:var(--dim)}
+
+@media (max-width:560px){
+  .tiles{grid-template-columns:repeat(2,1fr)}
+  .card{padding:18px 16px}
+  .hb{grid-template-columns:96px 1fr 76px;gap:8px;font-size:12.5px}
+}
+@media (prefers-reduced-motion:reduce){.hb .fill{transition:none}}
+#chart path.draw{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.2s ease-out .15s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion:reduce){#chart path.draw{animation:none;stroke-dashoffset:0}}

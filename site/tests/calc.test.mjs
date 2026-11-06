@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  project, projectBank, rankBanks, fdicSplit, treasuryEdge, parseShareParams, buildShareQuery, rateLabel, showdown,
+  project, projectBank, rankBanks, fdicSplit, treasuryEdge, parseShareParams, buildShareQuery, rateLabel, showdown, leaderStats,
 } from "../js/calc.js";
 
 const near = (actual, expected, tol = 1) =>
@@ -145,4 +145,13 @@ test("showdown: winner matches rankBanks even when the highest APY is ineligible
   assert.equal(s.winner.name, "A");
   assert.deepEqual(s.rivals.map((b) => b.name), ["B"]);
   assert.deepEqual(s.big, []);
+});
+
+test("leaderStats: weeks at #1 per bank, most first, and how often #1 changed", () => {
+  const L = (name) => ({ week: "x", name, apy: 4 });
+  const s = leaderStats([L("Vio"), L("Vio"), L("Peak"), L("Vio"), L("Peak"), L("Peak"), L("Peak")]);
+  assert.deepEqual(s.weeks, [{ name: "Peak", weeks: 4 }, { name: "Vio", weeks: 3 }]);
+  assert.equal(s.changes, 3);
+  assert.equal(s.current, "Peak");
+  assert.deepEqual(leaderStats([]), { weeks: [], changes: 0, current: null });
 });

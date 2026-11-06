@@ -77,7 +77,7 @@ def tmp_duckdb_with_marts():
 
 def test_payload_shape(tmp_duckdb_with_marts):
     p = build_payload(tmp_duckdb_with_marts, today=D("2026-11-05"))
-    assert set(p) == {"as_of", "fed_funds", "treasury_1y", "banks", "big_banks"}
+    assert set(p) == {"as_of", "fed_funds", "treasury_1y", "banks", "big_banks", "trend"}
     assert p["as_of"] == "2026-11-05"
     assert p["fed_funds"] == {"rate": 3.88, "as_of": "2026-10-01"}
     assert p["treasury_1y"] == {"rate": 4.46, "as_of": "2026-10-01"}
@@ -102,3 +102,16 @@ def test_expired_promo_is_dropped(tmp_duckdb_with_marts):
 def test_monthly_deposit_requirement_exported(tmp_duckdb_with_marts):
     p = build_payload(tmp_duckdb_with_marts, today=D("2026-11-05"))
     assert p["banks"][0]["min_monthly_deposit"] == 0
+
+
+def test_trend_weekly_leader_and_fed_funds(tmp_duckdb_with_marts):
+    c = tmp_duckdb_with_marts
+    # CIT reports mid-week and briefly leads the week of 10/26
+    c.execute("INSERT INTO MART.fct_savings_rate_history VALUES ('CIT Bank', DATE '2026-10-29', 4.40)")
+    p = build_payload(c, today=D("2026-11-05"))
+    assert p["trend"]["leaders"] == [
+        {"week": "2026-10-26", "name": "CIT Bank", "apy": 4.4},
+        {"week": "2026-11-02", "name": "Peak Bank", "apy": 4.27},
+    ]
+    # Fed funds from the month the history starts
+    assert p["trend"]["fed_funds"] == [{"date": "2026-10-01", "rate": 3.88}]

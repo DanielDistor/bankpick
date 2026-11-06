@@ -124,3 +124,16 @@ export function showdown(banks, bigBanks, { principal, monthly = 0, years }) {
     winner: ranked[0],
   };
 }
+
+/** From weekly leaders: weeks each bank held #1 (most first), times #1 changed, current #1. */
+export function leaderStats(leaders) {
+  const counts = new Map();
+  let changes = 0;
+  leaders.forEach((l, i) => {
+    counts.set(l.name, (counts.get(l.name) || 0) + 1);
+    if (i && l.name !== leaders[i - 1].name) changes++;
+  });
+  const weeks = [...counts].map(([name, weeks]) => ({ name, weeks }))
+    .sort((a, b) => b.weeks - a.weeks || a.name.localeCompare(b.name));
+  return { weeks, changes, current: leaders.at(-1)?.name ?? null };
+}

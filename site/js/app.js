@@ -1,5 +1,5 @@
 import {
-  project, projectBank, rankBanks, fdicSplit, treasuryEdge, parseShareParams, buildShareQuery, rateLabel, showdown,
+  project, projectBank, rankBanks, fdicSplit, treasuryEdge, parseShareParams, buildShareQuery, rateLabel, showdown, leaderStats,
   FDIC_LIMIT, MAX_AMOUNT, MAX_MONTHLY,
 } from "./calc.js";
 
@@ -162,7 +162,11 @@ function openDashboard() {
   dashInput.value = state.amount.toLocaleString("en-US");
   dashMonthly.value = state.monthly.toLocaleString("en-US");
   $("asOf").textContent = `Rates as of ${fmtDate(state.data.as_of)}`;
+  renderTrend(state.data);
+  renderLeaders(state.data);
+  state.animate = true;
   render();
+  state.animate = false;
   show("dash");
   document.querySelector("#dash .col").classList.add("fade");
 }
@@ -231,6 +235,16 @@ function render() {
   $("gVsLabel").textContent = chase ? `At ${chase.name.replace("JPMorgan ", "")} instead` : "";
   $("gVs").textContent = chaseSeries ? money(chaseSeries.at(-1)) : "";
   drawChart(topSeries, chaseSeries, years);
+  $("gLegend").innerHTML = `<span><i style="border-color:#22e07a"></i>${esc(top.name)}</span>`
+    + (chase ? `<span><i style="border-color:#e05252"></i>${esc(chase.name)}</span>` : "");
+  attachTip($("chart"), $("gTip"), topSeries.length - 1, (i) => {
+    const m = years * 12 * i / (topSeries.length - 1);
+    const label = m === 0 ? "Today" : m < 12 ? `Month ${Math.round(m)}` : `Year ${(m / 12).toFixed(m % 12 ? 1 : 0)}`;
+    return tipHtml(label, [["#22e07a", top.name, money(topSeries[i])], ...(chase ? [["#e05252", chase.name, money(chaseSeries[i])]] : [])]);
+  });
+
+  renderTiles(top, chase, topSeries, chaseSeries);
+  renderBigBars(top, d, topSeries.at(-1));
 
   // list
   const rows = ranked.slice(1, 5).map((b) => `
@@ -275,9 +289,146 @@ function drawChart(top, chase, years) {
   }).join("");
   $("chart").innerHTML = `<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22e07a" stop-opacity=".25"/><stop offset="1" stop-color="#22e07a" stop-opacity="0"/></linearGradient></defs>
     <path d="${topPath}L${x(n)},${H - B}L${x(0)},${H - B}Z" fill="url(#g)"/>
-    ${chase ? `<path d="${path(chase)}" stroke="#e05252" stroke-width="2" stroke-dasharray="5 5" fill="none"/>` : ""}
-    <path d="${topPath}" stroke="#22e07a" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    ${chase ? `<path d="${path(chase)}" stroke="#e05252" stroke-width="2" fill="none" stroke-linecap="round"/>` : ""}
+    <path class="${state.animate ? "draw" : ""}" pathLength="1" d="${topPath}" stroke="#22e07a" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
     <circle cx="${x(n)}" cy="${y(top.at(-1))}" r="5" fill="#22e07a"/>${ticks}`;
+}
+
+// ---------- dashboard extras ----------
+const SVGNS = "http://www.w3.org/2000/svg";
+
+function tipHtml(label, rows) {
+  return `<div class="d">${esc(label)}</div>` + rows.map(([c, name, v]) =>
+    `<div class="row2"><i style="border-color:${c}"></i><b>${esc(v)}</b><span>${esc(name)}</span></div>`).join("");
+}
+
+/** Crosshair + tooltip that snaps to the nearest of n+1 evenly spaced points. */
+function attachTip(svg, tip, n, html, { L = 4, R = 10, T = 10 } = {}) {
+  const vb = svg.viewBox.baseVal;
+  let hair = svg.querySelector(".hair");
+  if (!hair) {
+    hair = document.createElementNS(SVGNS, "line");
+    hair.setAttribute("class", "hair");
+    hair.setAttribute("stroke", "#56625a");
+    hair.setAttribute("stroke-width", "1");
+    hair.setAttribute("visibility", "hidden");
+  }
+  hair.setAttribute("y1", T); hair.setAttribute("y2", vb.height - 24);
+  svg.appendChild(hair);
+  svg.onpointermove = (e) => {
+    const r = svg.getBoundingClientRect();
+    const fx = ((e.clientX - r.left) / r.width) * vb.width;
+    const i = Math.max(0, Math.min(n, Math.round(((fx - L) / (vb.width - L - R)) * n)));
+    const x = L + (vb.width - L - R) * i / n;
+    hair.setAttribute("x1", x); hair.setAttribute("x2", x); hair.setAttribute("visibility", "visible");
+    tip.innerHTML = html(i);
+    tip.hidden = false;
+    const px = (x / vb.width) * r.width;
+    const w = tip.offsetWidth;
+    tip.style.left = Math.max(0, Math.min(r.width - w, px + (px > r.width / 2 ? -w - 12 : 12))) + "px";
+  };
+  svg.onpointerleave = () => { tip.hidden = true; hair.setAttribute("visibility", "hidden"); };
+}
+
+function countUp(el, to, fmt) {
+  if (!state.animate || matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = fmt(to); return; }
+  const t0 = performance.now(), dur = 900;
+  const step = () => {
+    const k = Math.min(1, (performance.now() - t0) / dur);
+    el.textContent = fmt(to * (1 - (1 - k) ** 3));
+    if (k < 1) requestAnimationFrame(step);
+  };
+  step();
+}
+
+const cents = (n) => n < 10 ? "$" + n.toFixed(2) : money(n);
+
+function renderTiles(top, chase, topSeries, chaseSeries) {
+  const { amount, years } = state;
+  const firstMonth = amount * ((1 + top.apy / 100) ** (1 / 12) - 1);
+  const gap = chaseSeries ? topSeries.at(-1) - chaseSeries.at(-1) : null;
+  const fed = state.data.fed_funds;
+  const tiles = [
+    { k: `In ${years} year${years > 1 ? "s" : ""}`, v: topSeries.at(-1), f: money, cls: "up", s: `at ${top.name}` },
+    gap != null && { k: "More than Chase", v: gap, f: (n) => "+" + money(n), cls: "up", s: `over ${years} year${years > 1 ? "s" : ""}` },
+    { k: "Interest, first month", v: firstMonth, f: money, s: chase ? `vs ${cents(amount * ((1 + chase.apy / 100) ** (1 / 12) - 1))} at Chase` : "" },
+    fed && { k: "Fed funds rate", v: fed.rate, f: (n) => n.toFixed(2) + "%", s: `${fmtDate(fed.as_of, { month: "short", year: "numeric" })} · sets savings rates` },
+  ].filter(Boolean);
+  $("tiles").innerHTML = tiles.map((t, i) =>
+    `<div class="tile"><div class="k">${esc(t.k)}</div><div class="v ${t.cls || ""}" id="tv${i}"></div><div class="s">${esc(t.s)}</div></div>`).join("");
+  tiles.forEach((t, i) => countUp($("tv" + i), t.v, t.f));
+}
+
+function hbars(el, rows, max) {
+  el.innerHTML = rows.map((r) => `
+    <div class="hb ${r.hi ? "hi" : ""}" title="${esc(r.name)}: ${esc(r.label)}">
+      <div class="n">${esc(r.name)}</div>
+      <div class="track"><div class="fill" data-w="${(100 * r.value / max).toFixed(2)}"></div></div>
+      <div class="v">${esc(r.label)}${r.sub ? `<small>${esc(r.sub)}</small>` : ""}</div>
+    </div>`).join("");
+  requestAnimationFrame(() => requestAnimationFrame(() =>
+    el.querySelectorAll(".fill").forEach((f) => { f.style.width = f.dataset.w + "%"; })));
+}
+
+function renderBigBars(top, d, topFinal) {
+  const { amount, monthly, years } = state;
+  const rows = [{ name: top.name, value: topFinal, label: money(topFinal), sub: `${top.apy.toFixed(2)}% / yr`, hi: true }];
+  for (const b of d.big_banks) {
+    const v = project({ principal: amount, monthly, apy: b.apy, promo: null, years }).at(-1);
+    rows.push({ name: b.name.replace("JPMorgan ", ""), value: v, label: money(v), sub: `−${money(topFinal - v)}` });
+  }
+  hbars($("bigBars"), rows, Math.max(...rows.map((r) => r.value)));
+  const deposited = amount + monthly * years * 12;
+  $("bbSub").innerHTML = `What ${money(amount)}${monthly ? ` + ${money(monthly)}/mo` : ""} becomes in ${years} year${years > 1 ? "s" : ""}. `
+    + `You put in <b>${money(deposited)}</b>; the big banks pay almost nothing on top.`;
+}
+
+function renderTrend(d) {
+  const t = d.trend;
+  const card = $("trend").closest(".card");
+  if (!t?.leaders?.length) { card.hidden = true; return; }
+  card.hidden = false;
+  const L = t.leaders;
+  const fedAt = (iso) => { let r = null; for (const f of t.fed_funds) if (f.date <= iso) r = f.rate; return r ?? t.fed_funds[0]?.rate ?? null; };
+  const fed = L.map((l) => fedAt(l.week));
+  const W = 680, H = 220, Lm = 48, R = 10, T = 10, B = 24;
+  const vals = L.map((l) => l.apy).concat(fed.filter((v) => v != null));
+  const yMin = Math.floor((Math.min(...vals) - 0.15) * 10) / 10, yMax = Math.ceil((Math.max(...vals) + 0.1) * 10) / 10;
+  const n = L.length - 1;
+  const x = (i) => Lm + (W - Lm - R) * i / n;
+  const y = (v) => T + (H - T - B) * (1 - (v - yMin) / (yMax - yMin));
+  const line = (arr) => arr.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join("");
+  const step = (arr) => arr.map((v, i) => i ? `L${x(i).toFixed(1)},${y(arr[i - 1]).toFixed(1)}L${x(i).toFixed(1)},${y(v).toFixed(1)}` : `M${x(0)},${y(v).toFixed(1)}`).join("");
+  const grid = [];
+  for (let g = Math.ceil(yMin * 4) / 4; g <= yMax; g += 0.25)
+    grid.push(`<line x1="${Lm}" x2="${W - R}" y1="${y(g)}" y2="${y(g)}" stroke="#1a211c"/><text x="0" y="${y(g) + 4}" fill="#56625a" font-size="11" text-anchor="start" font-family="JetBrains Mono, monospace">${g.toFixed(2)}%</text>`);
+  const mon = (iso) => fmtDate(iso, { month: "short", year: "2-digit" });
+  const ticks = [0, Math.round(n / 2), n].map((i) =>
+    `<text x="${x(i)}" y="${H - 4}" fill="#56625a" font-size="12" text-anchor="${i === 0 ? "start" : i === n ? "end" : "middle"}" font-family="JetBrains Mono, monospace">${mon(L[i].week)}</text>`).join("");
+  $("trend").innerHTML = grid.join("")
+    + `<path d="${step(fed)}" stroke="#9aa7a0" stroke-width="2" fill="none"/>`
+    + `<path d="${line(L.map((l) => l.apy))}" stroke="#22e07a" stroke-width="2.5" fill="none" stroke-linejoin="round"/>`
+    + `<circle cx="${x(n)}" cy="${y(L[n].apy)}" r="4" fill="#22e07a"/>` + ticks;
+  $("trLegend").innerHTML = `<span><i style="border-color:#22e07a"></i>Best online savings rate</span><span><i style="border-color:#9aa7a0"></i>Fed funds rate</span>`;
+  attachTip($("trend"), $("trTip"), n, (i) => tipHtml(`Week of ${fmtDate(L[i].week)}`,
+    [["#22e07a", L[i].name, L[i].apy.toFixed(2) + "%"], ["#9aa7a0", "Fed funds rate", fed[i] == null ? "—" : fed[i].toFixed(2) + "%"]]), { L: Lm, R, T });
+  const chase = comparisonBank(d);
+  const spread = L[n].apy - (fed[n] ?? 0);
+  $("trSub").innerHTML = `The best online banks move with the Fed and pay <b>${spread >= 0 ? "above" : "below"}</b> it today (${L[n].apy.toFixed(2)}% vs ${(fed[n] ?? 0).toFixed(2)}%).`
+    + (chase ? ` ${esc(chase.name.replace("JPMorgan ", ""))} pays <b>${chase.apy.toFixed(2)}%</b>.` : "");
+}
+
+function renderLeaders(d) {
+  const t = d.trend;
+  const card = $("leaderBars").closest(".card");
+  if (!t?.leaders?.length) { card.hidden = true; return; }
+  const st = leaderStats(t.leaders);
+  card.hidden = false;
+  hbars($("leaderBars"), st.weeks.map((w) => ({
+    name: w.name, value: w.weeks, label: `${w.weeks} wk${w.weeks === 1 ? "" : "s"}`, hi: w.name === st.current,
+  })), Math.max(...st.weeks.map((w) => w.weeks)));
+  $("ldSub").innerHTML = `The top spot changed hands <b>${st.changes} times</b> in ${t.leaders.length} weeks. `
+    + `That's why we re-check every day. Current #1: <b>${esc(st.current)}</b>.`;
 }
 
 // ---------- boot: a share link skips straight to the dashboard ----------
