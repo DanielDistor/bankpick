@@ -1,0 +1,151 @@
+{
+  "as_of": "2026-11-05",
+  "fed_funds": {
+    "rate": 3.88,
+    "as_of": "2026-10-01"
+  },
+  "treasury_1y": {
+    "rate": 4.46,
+    "as_of": "2026-10-01"
+  },
+  "banks": [
+    {
+      "name": "Peak Bank",
+      "apy": 4.27,
+      "promo": null,
+      "min_opening": 100,
+      "min_balance_for_apy": 0,
+      "url": null,
+      "badge": "Top 3 for 5 weeks"
+    },
+    {
+      "name": "EverBank",
+      "apy": 4.2,
+      "promo": null,
+      "min_opening": 0,
+      "min_balance_for_apy": 0,
+      "url": "https://www.everbank.com/",
+      "badge": null
+    },
+    {
+      "name": "Happen Bank",
+      "apy": 4.2,
+      "promo": null,
+      "min_opening": 0,
+      "min_balance_for_apy": 250,
+      "url": "https://www.happen.com/",
+      "badge": "Top 3 for 23 weeks"
+    },
+    {
+      "name": "Western State Bank",
+      "apy": 4.2,
+      "promo": null,
+      "min_opening": 1000,
+      "min_balance_for_apy": 0,
+      "url": null,
+      "badge": "Top 3 for 14 weeks"
+    },
+    {
+      "name": "Accordia Bank",
+      "apy": 4.1,
+      "promo": null,
+      "min_opening": 100,
+      "min_balance_for_apy": 0,
+      "url": null,
+      "badge": null
+    },
+    {
+      "name": "Bread Savings",
+      "apy": 4.05,
+      "promo": null,
+      "min_opening": 100,
+      "min_balance_for_apy": 0,
+      "url": "https://www.breadfinancial.com/en/bread-savings.html",
+      "badge": null
+    },
+    {
+      "name": "Vio Bank",
+      "apy": 4.01,
+      "promo": {
+        "apy": 4.25,
+        "months": 3,
+        "expires": null
+      },
+      "min_opening": 100,
+      "min_balance_for_apy": 0,
+      "url": "https://www.viobank.com/",
+      "badge": null
+    },
+    {
+      "name": "Live Oak Bank",
+      "apy": 4.0,
+      "promo": null,
+      "min_opening": 0,
+      "min_balance_for_apy": 0,
+      "url": "https://www.liveoak.bank/",
+      "badge": "Steady rate for 9 weeks"
+    },
+    {
+      "name": "TAB Bank",
+      "apy": 3.95,
+      "promo": null,
+      "min_opening": 0,
+      "min_balance_for_apy": 0,
+      "url": "https://www.tabbank.com/",
+      "badge": null
+    },
+    {
+      "name": "Bask Bank",
+      "apy": 3.9,
+      "promo": null,
+      "min_opening": 0,
+      "min_balance_for_apy": 0,
+      "url": "https://baskbank.com/",
+      "badge": null
+    },
+    {
+      "name": "Popular Direct",
+      "apy": 3.9,
+      "promo": null,
+      "min_opening": 100,
+      "min_balance_for_apy": 0,
+      "url": "https://www.populardirect.com/",
+      "badge": "Steady rate for 46 weeks"
+    },
+    {
+      "name": "CIT Bank",
+      "apy": 3.75,
+      "promo": {
+        "apy": 4.35,
+        "months": 6,
+        "expires": "2026-12-15"
+      },
+      "min_opening": 100,
+      "min_balance_for_apy": 5000,
+      "url": "https://www.cit.com/cit-bank/platinum-savings",
+      "badge": null
+    }
+  ],
+  "big_banks": [
+    {
+      "name": "JPMorgan Chase",
+      "apy": 0.01,
+      "as_of": "2026-04-26"
+    },
+    {
+      "name": "Bank of America",
+      "apy": 0.01,
+      "as_of": "2026-04-26"
+    },
+    {
+      "name": "Citibank",
+      "apy": 0.04,
+      "as_of": "2026-04-26"
+    },
+    {
+      "name": "Wells Fargo",
+      "apy": 0.01,
+      "as_of": "2026-04-26"
+    }
+  ]
+}
