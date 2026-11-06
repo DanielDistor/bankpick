@@ -49,6 +49,9 @@ jobs:
       - name: Parse Bankrate -> DuckDB
         run: python pipelines/parse_bankrate.py
 
+      - name: Parse savings offers + rate history -> DuckDB
+        run: python pipelines/parse_savings_offers.py
+
       - name: dbt build (models + tests)
         working-directory: dbt
         run: dbt build --profiles-dir .

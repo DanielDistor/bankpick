@@ -19,3 +19,11 @@ sources:
             tests: [not_null]
           - name: apy_pct
             tests: [not_null]
+      - name: bankrate_savings_offers
+        columns:
+          - name: bank_name
+            tests: [not_null]
+      - name: bankrate_rate_history
+        columns:
+          - name: rate_date
+            tests: [not_null]

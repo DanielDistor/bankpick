@@ -52,3 +52,23 @@ models:
         tests: [not_null]
       - name: passthrough_pct
         tests: [not_null]
+
+  - name: fct_savings_offers
+    description: "Recommendable savings offers: Bankrate editorial picks from the latest snapshot, with promo terms, minimums, and official URL"
+    columns:
+      - name: bank_name
+        tests: [not_null, unique]
+      - name: apy_pct
+        tests: [not_null]
+      - name: min_balance_for_apy
+        tests: [not_null]
+
+  - name: fct_savings_rate_history
+    description: "Weekly APY history per editorial bank, unioned across all snapshots"
+    columns:
+      - name: bank_name
+        tests: [not_null]
+      - name: rate_date
+        tests: [not_null]
+      - name: apy_pct
+        tests: [not_null]

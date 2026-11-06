@@ -6,10 +6,16 @@ solely to find promo terms for banks that are already editorial picks.
 import re
 from datetime import date, datetime
 
+from pathlib import Path
+
 try:
     from pipelines.parse_bankrate import BANK_NAME_MAP
+    from pipelines.warehouse import connect
 except ImportError:  # run as `python pipelines/parse_savings_offers.py`
     from parse_bankrate import BANK_NAME_MAP
+    from warehouse import connect
+
+RAW_DIR = Path(__file__).resolve().parent.parent / "knowledge" / "raw"
 
 EDITORIAL_HEADING_RE = re.compile(r"^## Bankrate[’']s editorial picks")
 OFFERS_HEADING = "## Best savings accounts"
@@ -153,3 +159,49 @@ def parse_rate_history(markdown: str) -> list[dict]:
             if m:
                 rows.append({"bank_name": bank, "rate_date": _date(m.group(1)), "apy_pct": float(m.group(2))})
     return rows
+
+
+def main() -> None:
+    """Full rebuild of raw.bankrate_savings_offers (newest snapshot) and
+    raw.bankrate_rate_history (distinct rows across every snapshot)."""
+    snapshots = []
+    for md_file in sorted(RAW_DIR.glob("bankrate_savings_*.md")):
+        markdown = md_file.read_text(encoding="utf-8")
+        offers = parse_editorial_offers(markdown)
+        if offers:
+            snapshots.append((date.fromisoformat(md_file.stem.split("_")[-1]), markdown, offers))
+    if not snapshots:
+        raise SystemExit("No Bankrate snapshot has an editorial section; refusing to load.")
+
+    snapshot_date, markdown, offers = snapshots[-1]
+    promos = parse_promos(markdown, [o["bank_name"] for o in offers])
+    history = sorted({(r["bank_name"], r["rate_date"], r["apy_pct"])
+                      for _, md, _ in snapshots for r in parse_rate_history(md)})
+
+    conn = connect()
+    try:
+        conn.execute("""
+            CREATE OR REPLACE TABLE raw.bankrate_savings_offers (
+                bank_name VARCHAR, apy_pct DOUBLE, promo_apy_pct DOUBLE, promo_months INTEGER,
+                promo_expires DATE, min_opening DOUBLE, min_balance_for_apy DOUBLE,
+                apy_as_of DATE, snapshot_date DATE
+            )""")
+        rows = []
+        for o in offers:
+            p = promos.get(o["bank_name"], {})
+            rows.append((o["bank_name"], o["apy_pct"], p.get("promo_apy_pct"), p.get("promo_months"),
+                         p.get("promo_expires"), o["min_opening"], o["min_balance_for_apy"],
+                         o["apy_as_of"], snapshot_date))
+        conn.executemany("INSERT INTO raw.bankrate_savings_offers VALUES (?,?,?,?,?,?,?,?,?)", rows)
+        conn.execute("""
+            CREATE OR REPLACE TABLE raw.bankrate_rate_history (
+                bank_name VARCHAR, rate_date DATE, apy_pct DOUBLE
+            )""")
+        conn.executemany("INSERT INTO raw.bankrate_rate_history VALUES (?,?,?)", history)
+        print(f"Loaded {len(rows)} offers ({snapshot_date}) and {len(history)} history rows")
+    finally:
+        conn.close()
+
+
+if __name__ == "__main__":
+    main()
