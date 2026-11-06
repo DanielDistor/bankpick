@@ -35,3 +35,6 @@ Thumbs.db
 
 # Local DuckDB warehouse (rebuilt every run; marts are exported to dashboard/data/)
 /data/
+
+# Brainstorming mockups
+.superpowers/
