@@ -2,7 +2,9 @@
 
 > Tracking how major U.S. banks respond to Federal Reserve rate changes and identifying where client deposits earn the most.
 
-**Live Dashboard:** [deposit-pricing-analytics-banking.streamlit.app](https://deposit-pricing-analytics-banking.streamlit.app)
+**Live site:** [danieldistor.github.io/deposit-pricing-analytics-banking](https://danieldistor.github.io/deposit-pricing-analytics-banking/)
+
+Type how much you're looking to invest (and, optionally, how much you'll add each month). The site shows which high-yield savings account grows it the most, what it becomes in 1, 5, 10, or 20 years, and what the same money would do at Chase. Rates come from a data pipeline that refreshes every day.
 
 ---
 
@@ -21,12 +23,12 @@ This project tracks how major U.S. banks responded to Federal Reserve rate chang
 | IDE | Cursor + Claude Code |
 | Data Warehouse | DuckDB (free, file-based) |
 | Transformation | dbt (`dbt-duckdb`) |
-| Orchestration | GitHub Actions (weekly refresh + keep-alive) |
-| Dashboard | Streamlit (Community Cloud) |
+| Orchestration | GitHub Actions (daily refresh + Pages deploy) |
+| Front end | Static HTML/CSS/JavaScript on GitHub Pages (no framework, no build step) |
 | Knowledge Base | Claude Code |
 | Version Control | Git + GitHub |
 
-The whole stack runs on free tiers with no expiring trials or paid APIs, so the live dashboard stays up indefinitely.
+The whole stack runs on free tiers with no expiring trials or paid APIs, so the live site stays up indefinitely and never sleeps.
 
 ---
 
@@ -35,7 +37,7 @@ The whole stack runs on free tiers with no expiring trials or paid APIs, so the 
 | Source | Type | Destination |
 |--------|------|-------------|
 | [FRED API](https://fred.stlouisfed.org/) | REST API (free key; keyless CSV fallback) | `raw.fred_observations` |
-| [Bankrate](https://www.bankrate.com/) | Web scrape (`requests` + `html2text`) | `knowledge/raw/` → `raw.bankrate_rates` |
+| [Bankrate](https://www.bankrate.com/) | Web scrape (`requests` + `html2text`) | `knowledge/raw/` → `raw.bankrate_rates`, `raw.bankrate_savings_offers`, `raw.bankrate_rate_history` |
 
 FRED series loaded: Fed Funds Rate (monthly + daily), 3-Month/1-Year/2-Year/5-Year/10-Year Treasury yields, Discount Window Rate.
 
@@ -60,8 +62,11 @@ flowchart LR
     DIM_BANK --> FACT
     DIM_PROD --> FACT
     DIM_DATE --> FACT
-    FACT -->|export_marts.py| CSV[dashboard/data/*.csv\ncommitted weekly]
-    CSV -->|DuckDB SQL| DASH[Dashboard\nStreamlit Cloud]
+    KB -->|parse_savings_offers.py| RAW_OFFERS[(raw.bankrate_savings_offers\nraw.bankrate_rate_history)]
+    RAW_OFFERS --> OFFERS[fct_savings_offers\nfct_savings_rate_history\ndbt Mart]
+    OFFERS -->|export_site_data.py| JSON[site/data/rates.json\ncommitted daily]
+    STG_FRED --> JSON
+    JSON --> SITE[GitHub Pages\nstatic site]
 ```
 
 ![Pipeline Diagram](docs/pipeline_diagram.png)
@@ -114,26 +119,23 @@ erDiagram
 
 ## Key Insights
 
-_Figures as of the November 2026 refresh (Fed funds rate 3.88%); the dashboard updates weekly._
+_Figures as of the November 5, 2026 refresh (Fed funds rate 3.88%); the live site updates daily._
 
-- **Pass-through rate explains the APY gap:** The Fed funds rate sets the benchmark. Banks decide how much of it to share with depositors. Top online banks now pass through 100% to 112% of the Fed rate, meaning their savings APY matches or exceeds the Fed rate itself. JPMorgan Chase, Bank of America, and Wells Fargo pass through under 1%, keeping nearly the entire rate as profit margin.
-- **Every online bank outperforms every traditional bank on savings APY:** CIT Bank leads at 4.35% APY, and every online bank in the dataset falls between 3.90% and 4.35%. JPMorgan Chase, BofA, and Wells Fargo sit at 0.01%, with Citibank at 0.04%.
-- **The dollar impact on $10,000 is immediate:** A $10,000 deposit at CIT Bank earns $435 per year. The same deposit at JPMorgan Chase earns $1 per year. Same deposit, same year, different bank.
-- **Compounding widens the gap over time:** The difference between a 4.30% APY and a 0.01% APY compounds significantly. Over 10 years, the gap between the best and worst savings account on $10,000 grows to over $5,000.
-- **Bank choice is the only variable a client controls:** The Fed rate moves on its own. The bank's pass-through policy is fixed. The only decision available to a client is which bank holds their deposit.
+- **Pass-through rate explains the APY gap:** The Fed funds rate sets the benchmark, and banks decide how much of it to share. Top online banks pay 3.90% to 4.27% on savings, at or above the Fed rate. JPMorgan Chase, Bank of America, and Wells Fargo pay 0.01%, keeping nearly the entire rate as margin.
+- **The dollar impact is immediate:** $10,000 at Peak Bank (4.27%) earns about $427 in a year. The same deposit at JPMorgan Chase earns $1.
+- **Headline rates can mislead:** CIT Bank advertises 4.35%, but that is a 6-month promo on a 3.75% base. Over 10 years the promo adds only about $104 on $25,000, so the site projects promo-then-base and ranks banks by what they actually pay over the chosen horizon.
+- **Minimums matter:** some top rates only apply above a balance (CIT needs $5,000, Happen Bank $250). The site skips banks whose minimum is above the amount entered.
+- **Bank choice is the only variable a client controls:** the Fed rate moves on its own and each bank's pricing policy is fixed. The decision a client can make is which bank holds the deposit.
 
 ---
 
-## Dashboard
+## How the site works
 
-**Live URL:** [deposit-pricing-analytics-banking.streamlit.app](https://deposit-pricing-analytics-banking.streamlit.app)
+1. **Ask:** "How much are you looking to invest?" plus an optional monthly contribution.
+2. **Loading:** checks the Fed rate, scans the latest bank rates, and grows the money (a short animation over the day's data; nothing is scraped live).
+3. **Dashboard:** the best account for that amount, its growth chart against Chase, the next four options, a 1-year Treasury line when a Treasury pays more, and an FDIC split when the amount is over $250,000. Amounts are editable in place, and the URL (e.g. `?amount=25000&monthly=500`) is shareable.
 
-Four tabs, all focused on savings accounts:
-
-1. **Descriptive: Which Bank Pays the Most?** — Ranked APY table with color gradient + bar chart. All banks, savings accounts only.
-2. **Descriptive: How Much Will I Earn?** — Lollipop chart showing annual dollar earnings on a $10,000 deposit across all banks.
-3. **Diagnostic: Why Do Some Banks Pay More?** — Pass-through rate chart with zone bands (Low / Medium / High) + ranked data table with annual earnings column.
-4. **Where Should I Deposit My Money?** — Enter a deposit amount, get the top 5 savings accounts with projected growth over 1, 5, and 10 years.
+Only Bankrate's editorial picks are recommended. Sponsored listings are used only to read promo terms for those same banks. Track-record badges ("Top 3 for 5 weeks", "Rate cut 0.10%") come from each bank's weekly rate history.
 
 ---
 
@@ -152,16 +154,19 @@ pip install -r requirements.txt
 python pipelines/extract_fred.py
 python pipelines/extract_bankrate.py
 python pipelines/parse_bankrate.py
+python pipelines/parse_savings_offers.py
 
 # Transform + test
 (cd dbt && dbt build --profiles-dir .)
+python -m pytest -q pipelines/tests
+node --test 'site/tests/*.test.mjs'
 
-# Export marts for the dashboard, then run it
-python pipelines/export_marts.py
-streamlit run dashboard/app.py
+# Export the site's data file, then view the site
+python pipelines/export_site_data.py
+python -m http.server -d site 8000   # open http://localhost:8000
 ```
 
-In production, `.github/workflows/refresh-data.yml` runs these same steps every Sunday and commits the refreshed CSVs, which triggers a Streamlit Cloud redeploy. `.github/workflows/keep-alive.yml` visits the app every 8 hours so it never sleeps.
+In production, `.github/workflows/refresh-data.yml` runs these same steps every day at 12:00 UTC and commits `site/data/rates.json` (plus a new Bankrate snapshot only when rates changed). `.github/workflows/deploy-site.yml` then publishes `site/` to GitHub Pages.
 
 ---
 

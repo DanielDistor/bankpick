@@ -16,9 +16,6 @@ target/
 dbt_packages/
 logs/
 
-# Streamlit
-.streamlit/secrets.toml
-dashboard/.streamlit/
 
 # dbt user config
 dbt/.user.yml
@@ -33,7 +30,7 @@ Thumbs.db
 .claude/
 
 
-# Local DuckDB warehouse (rebuilt every run; marts are exported to dashboard/data/)
+# Local DuckDB warehouse (rebuilt every run; the site's data is exported to site/data/)
 /data/
 
 # Brainstorming mockups

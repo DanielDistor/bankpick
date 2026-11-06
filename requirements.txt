@@ -5,8 +5,3 @@ html2text>=2024.2.26
 duckdb>=1.1.0
 dbt-duckdb>=1.8.0
 pytest>=8.0.0
-
-# Dashboard
-streamlit>=1.50.0,<2.0
-pandas>=2.0.0
-plotly>=5.18.0

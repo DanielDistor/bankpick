@@ -1,0 +1,47 @@
+name: Deploy Site
+
+# Publishes site/ to GitHub Pages (free, never sleeps).
+# Pushes made by "Refresh Data" use GITHUB_TOKEN, which doesn't trigger push
+# workflows, so this also runs whenever that workflow finishes.
+
+on:
+  push:
+    branches: [main]
+    paths: ['site/**']
+  workflow_run:
+    workflows: ['Refresh Data']
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          ref: main   # pick up the data commit the refresh just pushed
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

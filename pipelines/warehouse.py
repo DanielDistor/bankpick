@@ -2,8 +2,8 @@
 
 The database file is rebuilt from scratch on every pipeline run (FRED is a full
 reload and Bankrate is re-parsed from the raw markdown snapshots in
-knowledge/raw/), so it is not committed. Only the exported mart CSVs in
-dashboard/data/ are committed for the Streamlit app to read.
+knowledge/raw/), so it is not committed. Only the exported site/data/rates.json is committed
+for the static site to read.
 """
 from pathlib import Path
 

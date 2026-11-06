@@ -1,12 +1,12 @@
 name: Refresh Data
 
-# Weekly ELT: FRED API + Bankrate scrape -> DuckDB -> dbt build -> CSV marts
-# committed to dashboard/data/, which Streamlit Community Cloud redeploys from.
-# Everything here is free: public-repo Actions minutes, DuckDB, dbt-duckdb.
+# Daily ELT: FRED API + Bankrate scrape -> DuckDB -> dbt build -> site/data/rates.json,
+# committed to the repo; "Deploy Site" then publishes site/ to GitHub Pages.
+# Everything here is free: public-repo Actions minutes, DuckDB, dbt-duckdb, Pages.
 
 on:
   schedule:
-    - cron: '0 7 * * 0'   # Sundays 07:00 UTC
+    - cron: '0 12 * * *'   # daily 12:00 UTC
   workflow_dispatch:
 
 permissions:
@@ -29,11 +29,19 @@ jobs:
           python-version: '3.12'
           cache: pip
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
       - name: Install dependencies
         run: pip install -r requirements.txt
 
       - name: Run parser tests
         run: python -m pytest -q pipelines/tests
+
+      - name: Run site math tests
+        run: node --test 'site/tests/*.test.mjs'
 
       - name: Extract FRED -> DuckDB
         run: python pipelines/extract_fred.py
@@ -42,7 +50,7 @@ jobs:
 
       - name: Scrape Bankrate
         # If Bankrate blocks the runner this week, keep going with the
-        # snapshots already in knowledge/raw/ so the dashboard stays up.
+        # snapshots already in knowledge/raw/ so the site stays up.
         continue-on-error: true
         run: python pipelines/extract_bankrate.py
 
@@ -56,17 +64,17 @@ jobs:
         working-directory: dbt
         run: dbt build --profiles-dir .
 
-      - name: Export marts for dashboard
-        run: python pipelines/export_marts.py
+      - name: Export site data
+        run: python pipelines/export_site_data.py
 
       - name: Commit refreshed data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add knowledge/raw dashboard/data
+          git add knowledge/raw site/data
           if git diff --cached --quiet; then
             echo "No data changes."
           else
-            git commit -m "data: weekly refresh $(date -u +%Y-%m-%d)"
+            git commit -m "data: daily refresh $(date -u +%Y-%m-%d)"
             git push
           fi

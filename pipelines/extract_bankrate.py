@@ -1,13 +1,21 @@
 """Scrape Bankrate's best-rate pages with plain HTTP and save them as markdown.
 
-Uses requests + html2text (both free) instead of a paid scraping API. Each run
-saves a dated snapshot to knowledge/raw/, which parse_bankrate.py reads.
+Uses requests + html2text (both free) instead of a paid scraping API. Runs daily;
+a dated snapshot is saved to knowledge/raw/ only when the parsed rates differ from
+the newest existing snapshot, so the repo doesn't fill with identical pages.
 """
 from datetime import date
 from pathlib import Path
 
 import html2text
 import requests
+
+try:
+    from pipelines.parse_bankrate import extract_rates_from_markdown
+    from pipelines.parse_savings_offers import parse_editorial_offers, parse_promos, parse_rate_history
+except ImportError:  # run as `python pipelines/extract_bankrate.py`
+    from parse_bankrate import extract_rates_from_markdown
+    from parse_savings_offers import parse_editorial_offers, parse_promos, parse_rate_history
 
 OUTPUT_DIR = Path(__file__).resolve().parent.parent / "knowledge" / "raw"
 
@@ -49,6 +57,27 @@ def scrape_page(url: str) -> str:
     return markdown
 
 
+def _fingerprint(markdown: str):
+    """What we actually use from a page; ignores ads, timestamps, and layout noise."""
+    offers = parse_editorial_offers(markdown)
+    if offers:
+        rates = [(o["bank_name"], o["apy_pct"], o["min_balance_for_apy"], o["min_opening"]) for o in offers]
+        promos = parse_promos(markdown, [o["bank_name"] for o in offers])
+        history = {(r["bank_name"], r["rate_date"], r["apy_pct"]) for r in parse_rate_history(markdown)}
+        return rates, promos, history
+    return sorted((r["bank_name"], r["term_months"], r["apy_pct"])
+                  for r in extract_rates_from_markdown(markdown, "cd", date.today()))
+
+
+def should_save(new_md: str, previous_md: str | None) -> bool:
+    return previous_md is None or _fingerprint(new_md) != _fingerprint(previous_md)
+
+
+def _latest_snapshot(slug: str) -> str | None:
+    files = sorted(OUTPUT_DIR.glob(f"{slug}_*.md"))
+    return files[-1].read_text(encoding="utf-8") if files else None
+
+
 def main():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     today = date.today().isoformat()
@@ -56,6 +85,9 @@ def main():
     for target in TARGETS:
         print(f"Scraping {target['url']}...", flush=True)
         markdown = scrape_page(target["url"])
+        if not should_save(markdown, _latest_snapshot(target["slug"])):
+            print("  No rate changes; snapshot not saved.")
+            continue
         out_path = OUTPUT_DIR / f"{target['slug']}_{today}.md"
         out_path.write_text(markdown, encoding="utf-8")
         print(f"  Saved: {out_path} ({len(markdown):,} chars)")
