@@ -28,6 +28,7 @@ SCORE_FDIC_RE = re.compile(r"^Bankrate score: [\d.]+ out of 5\s*Member FDIC")
 PROMO_APY_RE = re.compile(r"Earn (?:up to )?(\d+(?:\.\d+)?)% APY", re.IGNORECASE)
 PROMO_MONTHS_RE = re.compile(r"(\d+|[a-z]+)[\s-]months?\b", re.IGNORECASE)
 PROMO_EXPIRES_RE = re.compile(r"Offer expires (\d{1,2}/\d{1,2}/\d{4})")
+MONTHLY_DEPOSIT_RE = re.compile(r"deposits totaling at least \$([\d,]+) (?:per|a|each) month", re.IGNORECASE)
 SUFFIX_RE = re.compile(r"\s+(?:platinum\s+)?savings(?:\s+account)?$", re.IGNORECASE)
 
 NUMBER_WORDS = {
@@ -104,11 +105,13 @@ def parse_editorial_offers(markdown: str) -> list[dict]:
             continue
         min_opening = _dollars(_value_after(lines, "Min. opening balance", DOLLAR_RE))
         min_apy = _dollars(_value_after(lines, "Min. balance for APY", DOLLAR_RE))
+        monthly = next((MONTHLY_DEPOSIT_RE.search(l) for l in lines if MONTHLY_DEPOSIT_RE.search(l)), None)
         offers.append({
             "bank_name": bank,
             "apy_pct": float(apy.group(1)),
             "min_balance_for_apy": min_apy if min_apy is not None else (min_opening or 0.0),
             "min_opening": min_opening or 0.0,
+            "min_monthly_deposit": _dollars(monthly) or 0.0,
             "apy_as_of": _date(as_of.group(1)) if as_of else None,
         })
     return offers
@@ -184,15 +187,16 @@ def main() -> None:
             CREATE OR REPLACE TABLE raw.bankrate_savings_offers (
                 bank_name VARCHAR, apy_pct DOUBLE, promo_apy_pct DOUBLE, promo_months INTEGER,
                 promo_expires DATE, min_opening DOUBLE, min_balance_for_apy DOUBLE,
-                apy_as_of DATE, snapshot_date DATE
+                min_monthly_deposit DOUBLE, apy_as_of DATE, snapshot_date DATE
             )""")
         rows = []
         for o in offers:
             p = promos.get(o["bank_name"], {})
             rows.append((o["bank_name"], o["apy_pct"], p.get("promo_apy_pct"), p.get("promo_months"),
                          p.get("promo_expires"), o["min_opening"], o["min_balance_for_apy"],
+                         o["min_monthly_deposit"],
                          o["apy_as_of"], snapshot_date))
-        conn.executemany("INSERT INTO raw.bankrate_savings_offers VALUES (?,?,?,?,?,?,?,?,?)", rows)
+        conn.executemany("INSERT INTO raw.bankrate_savings_offers VALUES (?,?,?,?,?,?,?,?,?,?)", rows)
         conn.execute("""
             CREATE OR REPLACE TABLE raw.bankrate_rate_history (
                 bank_name VARCHAR, rate_date DATE, apy_pct DOUBLE

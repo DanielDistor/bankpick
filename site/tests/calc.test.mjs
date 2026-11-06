@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  project, rankBanks, fdicSplit, treasuryEdge, parseShareParams, buildShareQuery, rateLabel,
+  project, projectBank, rankBanks, fdicSplit, treasuryEdge, parseShareParams, buildShareQuery, rateLabel,
 } from "../js/calc.js";
 
 const near = (actual, expected, tol = 1) =>
@@ -108,4 +108,21 @@ test("buildShareQuery", () => {
 test("rateLabel", () => {
   assert.equal(rateLabel(CIT), "4.35% for 6 months, then 3.75%");
   assert.equal(rateLabel(bank("X", 3.75)), "3.75%");
+});
+
+test("fallback never credits an APY below its balance requirement", () => {
+  const banks = [bank("A", 5.0, { min_balance_for_apy: 5000 })];
+  const r = rankBanks(banks, { principal: 100, monthly: 0, years: 1 });
+  assert.equal(r.fallback, true);
+  assert.equal(r.ranked[0].final, 100); // earns nothing it isn't eligible for
+  assert.equal(projectBank(banks[0], { principal: 100, monthly: 0, years: 1 }).at(-1), 100);
+  // monthly deposits that cross the threshold start earning from that point
+  const grown = projectBank(banks[0], { principal: 100, monthly: 1000, years: 1 }).at(-1);
+  assert.ok(grown > 100 + 12000 && grown < 100 + 12000 + 0.05 * 12100);
+});
+
+test("rankBanks: monthly-deposit requirement gates eligibility", () => {
+  const banks = [bank("Happen", 4.2, { min_monthly_deposit: 250 }), bank("Other", 4.0)];
+  assert.deepEqual(rankBanks(banks, { principal: 25000, monthly: 0, years: 10 }).ranked.map((b) => b.name), ["Other"]);
+  assert.equal(rankBanks(banks, { principal: 25000, monthly: 250, years: 10 }).ranked[0].name, "Happen");
 });

@@ -1,5 +1,5 @@
 import {
-  project, rankBanks, fdicSplit, treasuryEdge, parseShareParams, buildShareQuery, rateLabel,
+  project, projectBank, rankBanks, fdicSplit, treasuryEdge, parseShareParams, buildShareQuery, rateLabel,
   FDIC_LIMIT, MAX_AMOUNT, MAX_MONTHLY,
 } from "./calc.js";
 
@@ -86,7 +86,7 @@ async function playLoading(d) {
 
   steps[2].classList.add("active");
   const top = rankBanks(d.banks, { principal: state.amount, monthly: state.monthly, years: 10 }).ranked[0];
-  const target = project({ principal: state.amount, monthly: state.monthly, apy: top.apy, promo: top.promo, years: 10 }).at(-1);
+  const target = projectBank(top, { principal: state.amount, monthly: state.monthly, years: 10 }).at(-1);
   const t1 = performance.now();
   while (performance.now() - t1 < 700) {
     const k = (performance.now() - t1) / 700;
@@ -126,7 +126,10 @@ dashMonthly.addEventListener("input", onDashEdit);
 
 const toOpen = (b) => {
   const open = b.min_opening ? `${money(b.min_opening)} to open` : "No minimum to open";
-  return b.min_balance_for_apy > b.min_opening ? `${open} · ${money(b.min_balance_for_apy)} for APY` : open;
+  const parts = [open];
+  if (b.min_balance_for_apy > b.min_opening) parts.push(`${money(b.min_balance_for_apy)} for APY`);
+  if (b.min_monthly_deposit > 0) parts.push(`needs ${money(b.min_monthly_deposit)}/mo deposits`);
+  return parts.join(" · ");
 };
 const openLink = (b) => b.url
   ? `<a class="open" href="${esc(b.url)}" target="_blank" rel="noopener">Open account →</a>` : "";
@@ -134,7 +137,7 @@ const badge = (b) => (b.badge ? `<span class="badge">${esc(b.badge)}</span>` : "
 
 function firstYearEarned(b) {
   const { amount: principal, monthly } = state;
-  return project({ principal, monthly, apy: b.apy, promo: b.promo, years: 1 }).at(-1) - principal - monthly * 12;
+  return projectBank(b, { principal, monthly, years: 1 }).at(-1) - principal - monthly * 12;
 }
 
 function render() {
@@ -163,7 +166,7 @@ function render() {
     `<button class="tab ${y === years ? "on" : ""}" data-y="${y}" aria-pressed="${y === years}">${y} yr</button>`).join("");
   $("tabs").querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => { state.years = Number(t.dataset.y); render(); }));
 
-  const topSeries = project({ principal: amount, monthly, apy: top.apy, promo: top.promo, years });
+  const topSeries = projectBank(top, { principal: amount, monthly, years });
   const chaseSeries = chase ? project({ principal: amount, monthly, apy: chase.apy, promo: null, years }) : null;
   const end = topSeries.at(-1);
   const deposited = amount + monthly * years * 12;

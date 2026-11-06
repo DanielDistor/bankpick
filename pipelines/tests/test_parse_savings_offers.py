@@ -49,3 +49,9 @@ def test_canonical_bank_name():
 def test_no_editorial_section_returns_empty():
     assert parse_editorial_offers("# nothing here") == []
     assert parse_rate_history("# nothing here") == []
+
+
+def test_monthly_deposit_requirement_from_blurb():
+    offers = {o["bank_name"]: o for o in parse_editorial_offers(FIXTURE)}
+    assert offers["Happen Bank"]["min_monthly_deposit"] == 250
+    assert offers["CIT Bank"]["min_monthly_deposit"] == 0

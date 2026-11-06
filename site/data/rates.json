@@ -15,7 +15,8 @@
       "promo": null,
       "min_opening": 100,
       "min_balance_for_apy": 0,
-      "url": null,
+      "min_monthly_deposit": 0,
+      "url": "https://www.peak.bank/peak-bank/savings",
       "badge": "Top 3 for 5 weeks"
     },
     {
@@ -24,6 +25,7 @@
       "promo": null,
       "min_opening": 0,
       "min_balance_for_apy": 0,
+      "min_monthly_deposit": 0,
       "url": "https://www.everbank.com/",
       "badge": null
     },
@@ -33,6 +35,7 @@
       "promo": null,
       "min_opening": 0,
       "min_balance_for_apy": 250,
+      "min_monthly_deposit": 250,
       "url": "https://www.happen.com/",
       "badge": "Top 3 for 23 weeks"
     },
@@ -42,6 +45,7 @@
       "promo": null,
       "min_opening": 1000,
       "min_balance_for_apy": 0,
+      "min_monthly_deposit": 0,
       "url": null,
       "badge": "Top 3 for 14 weeks"
     },
@@ -51,6 +55,7 @@
       "promo": null,
       "min_opening": 100,
       "min_balance_for_apy": 0,
+      "min_monthly_deposit": 0,
       "url": null,
       "badge": null
     },
@@ -60,6 +65,7 @@
       "promo": null,
       "min_opening": 100,
       "min_balance_for_apy": 0,
+      "min_monthly_deposit": 0,
       "url": "https://www.breadfinancial.com/en/bread-savings.html",
       "badge": null
     },
@@ -73,6 +79,7 @@
       },
       "min_opening": 100,
       "min_balance_for_apy": 0,
+      "min_monthly_deposit": 0,
       "url": "https://www.viobank.com/",
       "badge": null
     },
@@ -82,6 +89,7 @@
       "promo": null,
       "min_opening": 0,
       "min_balance_for_apy": 0,
+      "min_monthly_deposit": 0,
       "url": "https://www.liveoak.bank/",
       "badge": "Steady rate for 9 weeks"
     },
@@ -91,6 +99,7 @@
       "promo": null,
       "min_opening": 0,
       "min_balance_for_apy": 0,
+      "min_monthly_deposit": 0,
       "url": "https://www.tabbank.com/",
       "badge": null
     },
@@ -100,6 +109,7 @@
       "promo": null,
       "min_opening": 0,
       "min_balance_for_apy": 0,
+      "min_monthly_deposit": 0,
       "url": "https://baskbank.com/",
       "badge": null
     },
@@ -109,6 +119,7 @@
       "promo": null,
       "min_opening": 100,
       "min_balance_for_apy": 0,
+      "min_monthly_deposit": 0,
       "url": "https://www.populardirect.com/",
       "badge": "Steady rate for 46 weeks"
     },
@@ -122,6 +133,7 @@
       },
       "min_opening": 100,
       "min_balance_for_apy": 5000,
+      "min_monthly_deposit": 0,
       "url": "https://www.cit.com/cit-bank/platinum-savings",
       "badge": null
     }

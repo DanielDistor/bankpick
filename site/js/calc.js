@@ -11,21 +11,31 @@ const monthlyRate = (apyPct) => (1 + apyPct / 100) ** (1 / 12) - 1;
  * A promo rate applies for its first `promo.months` months, then the ongoing APY.
  * Contributions land at each month end, after that month's interest.
  */
-export function project({ principal, monthly = 0, apy, promo = null, years }) {
+export function project({ principal, monthly = 0, apy, promo = null, years, minBalance = 0 }) {
   const base = monthlyRate(apy);
   const boosted = promo ? monthlyRate(promo.apy) : base;
   const promoMonths = promo ? promo.months : 0;
   const balances = [principal];
   let bal = principal;
   for (let m = 1; m <= years * 12; m++) {
-    bal = bal * (1 + (m <= promoMonths ? boosted : base)) + monthly;
+    const rate = bal < minBalance ? 0 : (m <= promoMonths ? boosted : base);
+    bal = bal * (1 + rate) + monthly;
     balances.push(bal);
   }
   return balances;
 }
 
-const finalBalance = (bank, { principal, monthly, years }) =>
-  project({ principal, monthly, apy: bank.apy, promo: bank.promo, years }).at(-1);
+/**
+ * Project a bank's balances honestly: months that start below the bank's
+ * balance-for-APY earn nothing (Bankrate doesn't state the lower tier's rate,
+ * so we never credit an APY the person isn't eligible for).
+ */
+export function projectBank(bank, { principal, monthly = 0, years }) {
+  return project({ principal, monthly, apy: bank.apy, promo: bank.promo, years,
+    minBalance: bank.min_balance_for_apy || 0 });
+}
+
+const finalBalance = (bank, opts) => projectBank(bank, opts).at(-1);
 
 const threshold = (bank) => Math.max(bank.min_opening || 0, bank.min_balance_for_apy || 0);
 
@@ -43,12 +53,13 @@ function sortByGrowth(banks, opts) {
  */
 export function rankBanks(banks, { principal, monthly = 0, years }) {
   const opts = { principal, monthly, years };
-  const eligible = banks.filter((b) => principal >= threshold(b));
+  const meetsMonthly = (b) => monthly >= (b.min_monthly_deposit || 0);
+  const eligible = banks.filter((b) => principal >= threshold(b) && meetsMonthly(b));
   if (eligible.length) return { ranked: sortByGrowth(eligible, opts), fallback: false, neededFor: null };
 
   const topByApy = [...banks].sort((a, b) => b.apy - a.apy).slice(0, 3);
   const neededFor = topByApy.length ? Math.min(...topByApy.map(threshold)) : null;
-  const openable = banks.filter((b) => principal >= (b.min_opening || 0));
+  const openable = banks.filter((b) => principal >= (b.min_opening || 0) && meetsMonthly(b));
   return { ranked: sortByGrowth(openable.length ? openable : banks, opts), fallback: true, neededFor };
 }
 
@@ -68,8 +79,7 @@ export function fdicSplit(amount, ranked) {
 /** A 1-year Treasury line, only when it beats the top bank's real first-year earnings. */
 export function treasuryEdge(topBank, treasury1y, principal) {
   if (!topBank || treasury1y == null) return null;
-  const bankEarned =
-    project({ principal, monthly: 0, apy: topBank.apy, promo: topBank.promo, years: 1 }).at(-1) - principal;
+  const bankEarned = projectBank(topBank, { principal, monthly: 0, years: 1 }).at(-1) - principal;
   const extra = Math.round(principal * (treasury1y / 100) - bankEarned);
   return extra > 0 ? { rate: treasury1y, extra } : null;
 }

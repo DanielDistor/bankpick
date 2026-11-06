@@ -74,15 +74,16 @@ def _num(x: float) -> float | int:
     return int(x) if float(x).is_integer() else float(x)
 
 
-def build_payload(conn) -> dict:
+def build_payload(conn, today: date | None = None) -> dict:
+    today = today or date.today()
     offers = conn.execute(
         """SELECT bank_name, apy_pct, promo_apy_pct, promo_months, promo_expires,
-                  min_opening, min_balance_for_apy, url, snapshot_date
+                  min_opening, min_balance_for_apy, min_monthly_deposit, url, snapshot_date
            FROM MART.fct_savings_offers ORDER BY apy_pct DESC, bank_name"""
     ).fetchall()
     if not offers:
         raise SystemExit("MART.fct_savings_offers is empty; refusing to export.")
-    as_of = max(o[8] for o in offers)
+    as_of = max(o[9] for o in offers)
 
     history: History = defaultdict(list)
     for name, d, rate in conn.execute(
@@ -91,9 +92,10 @@ def build_payload(conn) -> dict:
         history[name].append((d, float(rate)))
 
     banks = []
-    for name, apy, p_apy, p_months, p_exp, min_open, min_apy, url, _ in offers:
+    for name, apy, p_apy, p_months, p_exp, min_open, min_apy, min_monthly, url, _ in offers:
         promo = None
-        if p_apy is not None and p_months:
+        expired = p_exp is not None and p_exp < today  # new sign-ups can't get it anymore
+        if p_apy is not None and p_months and not expired:
             promo = {"apy": float(p_apy), "months": int(p_months),
                      "expires": p_exp.isoformat() if p_exp else None}
         banks.append({
@@ -102,6 +104,7 @@ def build_payload(conn) -> dict:
             "promo": promo,
             "min_opening": _num(min_open),
             "min_balance_for_apy": _num(min_apy),
+            "min_monthly_deposit": _num(min_monthly or 0),
             "url": url,
             "badge": compute_badge(history, name, as_of),
         })

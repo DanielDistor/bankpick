@@ -11,6 +11,7 @@ select
     l.promo_expires,
     l.min_opening,
     l.min_balance_for_apy,
+    l.min_monthly_deposit,
     u.url,
     l.apy_as_of,
     l.snapshot_date

@@ -6,6 +6,7 @@ select
     promo_expires,
     coalesce(min_opening, 0)            as min_opening,
     coalesce(min_balance_for_apy, min_opening, 0) as min_balance_for_apy,
+    coalesce(min_monthly_deposit, 0)    as min_monthly_deposit,
     apy_as_of,
     snapshot_date
 from {{ source('raw', 'bankrate_savings_offers') }}

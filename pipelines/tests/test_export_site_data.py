@@ -55,9 +55,9 @@ def tmp_duckdb_with_marts():
     c = duckdb.connect()
     c.execute("CREATE SCHEMA MART; CREATE SCHEMA STAGING")
     c.execute("""CREATE TABLE MART.fct_savings_offers AS SELECT * FROM (VALUES
-        ('CIT Bank', 3.75, 4.35, 6, DATE '2026-12-15', 100.0, 5000.0, 'https://www.cit.com/', DATE '2026-11-03', DATE '2026-11-05'),
-        ('Peak Bank', 4.27, NULL, NULL, NULL, 100.0, 0.0, NULL, DATE '2026-11-03', DATE '2026-11-05')
-      ) t(bank_name, apy_pct, promo_apy_pct, promo_months, promo_expires, min_opening, min_balance_for_apy, url, apy_as_of, snapshot_date)""")
+        ('CIT Bank', 3.75, 4.35, 6, DATE '2026-12-15', 100.0, 5000.0, 0.0, 'https://www.cit.com/', DATE '2026-11-03', DATE '2026-11-05'),
+        ('Peak Bank', 4.27, NULL, NULL, NULL, 100.0, 0.0, 0.0, NULL, DATE '2026-11-03', DATE '2026-11-05')
+      ) t(bank_name, apy_pct, promo_apy_pct, promo_months, promo_expires, min_opening, min_balance_for_apy, min_monthly_deposit, url, apy_as_of, snapshot_date)""")
     c.execute("""CREATE TABLE MART.fct_savings_rate_history AS SELECT * FROM (VALUES
         ('CIT Bank', DATE '2026-10-27', 3.75), ('CIT Bank', DATE '2026-11-03', 3.75),
         ('Peak Bank', DATE '2026-10-27', 4.27), ('Peak Bank', DATE '2026-11-03', 4.27)
@@ -76,7 +76,7 @@ def tmp_duckdb_with_marts():
 
 
 def test_payload_shape(tmp_duckdb_with_marts):
-    p = build_payload(tmp_duckdb_with_marts)
+    p = build_payload(tmp_duckdb_with_marts, today=D("2026-11-05"))
     assert set(p) == {"as_of", "fed_funds", "treasury_1y", "banks", "big_banks"}
     assert p["as_of"] == "2026-11-05"
     assert p["fed_funds"] == {"rate": 3.88, "as_of": "2026-10-01"}
@@ -90,3 +90,15 @@ def test_payload_shape(tmp_duckdb_with_marts):
         {"name": "JPMorgan Chase", "apy": 0.01, "as_of": "2026-04-26"},
         {"name": "Citibank", "apy": 0.04, "as_of": "2026-04-26"},
     ]
+
+
+def test_expired_promo_is_dropped(tmp_duckdb_with_marts):
+    p = build_payload(tmp_duckdb_with_marts, today=D("2026-12-16"))
+    assert p["banks"][1]["name"] == "CIT Bank" and p["banks"][1]["promo"] is None
+    p = build_payload(tmp_duckdb_with_marts, today=D("2026-12-15"))
+    assert p["banks"][1]["promo"] is not None
+
+
+def test_monthly_deposit_requirement_exported(tmp_duckdb_with_marts):
+    p = build_payload(tmp_duckdb_with_marts, today=D("2026-11-05"))
+    assert p["banks"][0]["min_monthly_deposit"] == 0
