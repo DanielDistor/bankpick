@@ -207,3 +207,9 @@ tr.sep td{padding:0;border-bottom:1px solid var(--line)}
   .stats{grid-template-columns:1fr 1fr}
   .asof{order:5;width:100%}
 }
+
+/* name */
+.brand{font:700 16px Inter,sans-serif;letter-spacing:-.02em;color:var(--text);margin-right:var(--s2)}
+.brand b{color:var(--green);font-weight:700}
+.brand-ask{position:absolute;top:var(--s5);left:var(--s5);z-index:2}
+@media (max-width:560px){.brand-ask{top:var(--s4);left:var(--s4)}.topbar .brand{width:100%;margin-bottom:var(--s1)}}
