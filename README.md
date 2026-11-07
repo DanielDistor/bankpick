@@ -20,10 +20,17 @@ On $25k plus $500 a month, that's $27,285 more after 10 years just from picking 
 
 ## How it works
 
-| 1. Ask | 2. Load | 3. Answer |
-|---|---|---|
-| ![Ask](docs/screenshots/ask.png) | ![Loading](docs/screenshots/loading.png) | ![Timeline answer](docs/screenshots/timeline.png) |
-| How much, monthly adds, when you need it | Pulls the Fed rate and today's bank rates | Where to put it and how much you end up with |
+**1. Ask:** how much, what you add monthly, and when you need it back
+
+<img src="docs/screenshots/ask.png" width="720" alt="Ask screen">
+
+**2. Load:** pulls the Fed rate and today's bank rates, then runs your numbers
+
+<img src="docs/screenshots/loading.png" width="720" alt="Loading screen">
+
+**3. Answer:** the #1 pick with what you'll have, then the runner-ups
+
+<img src="docs/screenshots/timeline.png" width="720" alt="Answer: 2-year Treasury for $25k + $500/mo">
 
 - **Need it anytime:** best high-yield savings account, with promos and minimums accounted for
 - **Need it in 1, 2, 3 or 5 years:** savings vs CDs of that exact length vs the matching Treasury, whichever ends highest wins
