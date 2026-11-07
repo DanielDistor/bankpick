@@ -32,7 +32,7 @@ pricing? Which banks pass through rate changes fastest? Who is winning deposits?
 - **Dimensions:** banks, product types (savings/CD/money market), Fed rate cycles
 
 ## Product
-A public savings recommender: ask how much someone is looking to invest, optional monthly
+**BankPick** (tagline: "Where to put your money"). A public savings recommender: ask how much someone is looking to invest, optional monthly
 contributions, and when they'll need it (anytime, 1/2/3/5 years). Anytime recommends the best
 high-yield savings account; a timeline compares savings vs. CDs of that exact term vs. the matching
 Treasury. Flow is ask -> loading -> dashboard (no other screens). The dashboard adds the gap vs.

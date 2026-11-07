@@ -1,6 +1,8 @@
-# Where to Put Your Money
+# BankPick
 
-**Tell it how much you have, what you add monthly, and when you need it back. It shows you the savings account, CD or Treasury that pays you the most, with rates pulled fresh every day**
+**Where to put your money**
+
+Tell it how much you have, what you add monthly, and when you need it back. BankPick shows you the bank, CD or Treasury that pays you the most, with rates pulled fresh every day
 
 [![Live site](https://img.shields.io/badge/live-danieldistor.github.io-22e07a?style=flat-square)](https://danieldistor.github.io/deposit-pricing-analytics-banking/)
 [![Refresh Data](https://github.com/DanielDistor/deposit-pricing-analytics-banking/actions/workflows/refresh-data.yml/badge.svg)](https://github.com/DanielDistor/deposit-pricing-analytics-banking/actions/workflows/refresh-data.yml)
@@ -16,7 +18,7 @@ Try it: [$25k + $500 a month](https://danieldistor.github.io/deposit-pricing-ana
 
 Chase pays 0.01% on savings. The best online banks pay over 4%
 
-On $25k plus $500 a month, that's $27,285 more after 10 years just from picking the right bank. Most people never check, so this does it for them
+On $25k plus $500 a month, that's $27,285 more after 10 years just from picking the right bank. Most people never check, so BankPick does it for them
 
 ## How it works
 
@@ -181,6 +183,6 @@ docs/                screenshots, diagrams, proposal
 
 ## Background
 
-Built for LMU ISBA-4715 (Analytics Engineering). Started as "how do banks pass Fed rate changes on to savers" and turned into a tool that just tells you where to put your money
+Built for LMU ISBA-4715 (Analytics Engineering). Started as "how do banks pass Fed rate changes on to savers" and turned into BankPick, a tool that just tells you where to put your money
 
 Rates are info, not financial advice

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Where to Put Your Money</title>
-<meta name="description" content="Type how much you're investing and see which high-yield savings account grows it the most. Real rates, refreshed daily.">
+<title>BankPick · Where to put your money</title>
+<meta name="description" content="BankPick: tell it how much you have and when you need it, and it picks the bank, CD or Treasury that pays you the most. Rates refreshed daily.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23050605'/%3E%3Cpath d='M6 22 L13 15 L18 19 L26 9' stroke='%2322e07a' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,6 +15,7 @@
 
 <!-- 1. ASK -->
 <section class="screen on" id="ask">
+  <div class="brand brand-ask">Bank<b>Pick</b></div>
   <div class="glow" aria-hidden="true"></div>
   <form class="fade" id="askForm" novalidate>
     <h1>How much are you looking to invest?</h1>
@@ -57,6 +58,7 @@
 <section class="screen" id="dash">
   <div class="wrap">
     <div class="topbar">
+      <div class="brand">Bank<b>Pick</b></div>
       <label class="amt"><span>Amount</span><em>$</em><input id="dashInput" inputmode="numeric" autocomplete="off" aria-label="Amount to invest"></label>
       <label class="amt"><span>Monthly</span><em>$</em><input id="dashMonthly" class="small" inputmode="numeric" autocomplete="off" aria-label="Monthly contribution"></label>
       <label class="amt"><span>Need it</span><select id="dashNeed" aria-label="When will you need this money?">
