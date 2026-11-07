@@ -78,7 +78,7 @@ async function start() {
 async function playLoading(d) {
   show("load");
   const steps = [...document.querySelectorAll(".step")];
-  const total = 3600, t0 = performance.now();
+  const total = 7000, t0 = performance.now(); // matches the step timings below
   const tick = () => {
     const p = Math.min(1, (performance.now() - t0) / total);
     $("prog").style.width = p * 100 + "%";
@@ -88,13 +88,13 @@ async function playLoading(d) {
 
   steps[0].classList.add("active");
   $("s1").textContent = d.fed_funds ? `Federal Reserve · ${fmtDate(d.fed_funds.as_of, { month: "short", year: "numeric" })}` : "Federal Reserve";
-  await wait(900);
+  await wait(1700);
   steps[0].className = "step done";
   $("r1").textContent = d.fed_funds ? d.fed_funds.rate.toFixed(2) + "%" : "—";
 
   steps[1].classList.add("active");
   const names = [...d.banks, ...d.big_banks].map((b) => b.name);
-  const per = Math.max(40, Math.min(110, 1400 / names.length));
+  const per = Math.max(120, Math.min(220, 2800 / names.length));
   for (const n of names) { $("s2").textContent = n; await wait(per); }
   $("s2").textContent = `Bankrate · as of ${fmtDate(d.as_of, { month: "short", day: "numeric" })}`;
   steps[1].className = "step done";
@@ -108,15 +108,15 @@ async function playLoading(d) {
       { principal: state.amount, monthly: state.monthly, years: 10 }).at(-1);
   const inYrs = ` in ${yrs} year${yrs > 1 ? "s" : ""}`;
   const t1 = performance.now();
-  while (performance.now() - t1 < 700) {
-    const k = (performance.now() - t1) / 700;
+  while (performance.now() - t1 < 1600) {
+    const k = (performance.now() - t1) / 1600;
     $("s3").textContent = money(state.amount + (target - state.amount) * k) + inYrs;
     await wait(30);
   }
   $("s3").textContent = money(target) + inYrs;
   steps[2].className = "step done";
   $("r3").textContent = "✓";
-  await wait(450);
+  await wait(900);
 }
 
 // ---------- 2b. showdown ----------
@@ -163,8 +163,7 @@ async function playShowdown(d) {
   $("elCards").innerHTML = "";
   $("elColBank").textContent = `Bank · your money in ${years} yrs`;
   show("elim");
-  await elRound("Checking the big banks", s.big);
-  await elRound(state.need ? "Comparing savings, CDs and Treasuries" : "Comparing the top online banks", s.rivals.map(withFinal));
+  await elRound(state.need ? "Comparing savings, CDs and Treasuries" : "Comparing the top savings accounts", s.rivals.map(withFinal));
   $("elHead").textContent = "Your best option";
   const w = elCard(withFinal(s.winner));
   await wait(450);
