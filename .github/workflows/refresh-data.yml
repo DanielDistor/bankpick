@@ -54,6 +54,15 @@ jobs:
         continue-on-error: true
         run: python pipelines/extract_bankrate.py
 
+      - name: Scrape big-bank savings rates
+        # Same fallback: if blocked, the last confirmed rates stay (and the
+        # site's data-health panel shows how old they are).
+        continue-on-error: true
+        run: python pipelines/extract_big_banks.py
+
+      - name: Load big-bank rates -> DuckDB
+        run: python pipelines/extract_big_banks.py --load
+
       - name: Parse Bankrate -> DuckDB
         run: python pipelines/parse_bankrate.py
 

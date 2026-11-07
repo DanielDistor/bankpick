@@ -142,22 +142,22 @@
     {
       "name": "JPMorgan Chase",
       "apy": 0.01,
-      "as_of": "2026-04-26"
+      "as_of": "2026-11-06"
     },
     {
       "name": "Bank of America",
-      "apy": 0.01,
-      "as_of": "2026-04-26"
+      "apy": 0.04,
+      "as_of": "2026-11-06"
     },
     {
       "name": "Citibank",
-      "apy": 0.04,
-      "as_of": "2026-04-26"
+      "apy": 0.05,
+      "as_of": "2026-11-06"
     },
     {
       "name": "Wells Fargo",
       "apy": 0.01,
-      "as_of": "2026-04-26"
+      "as_of": "2026-11-06"
     }
   ],
   "trend": {
@@ -485,7 +485,7 @@
     ]
   },
   "health": {
-    "generated_at": "2026-11-07T03:44:23Z",
+    "generated_at": "2026-11-07T03:50:49Z",
     "checks": [
       {
         "name": "Rates are fresh",
@@ -514,13 +514,13 @@
       },
       {
         "name": "Big-bank rates are fresh",
-        "ok": false,
-        "detail": "as of 2026-04-26 (194 days old)"
+        "ok": true,
+        "detail": "as of 2026-11-06"
       },
       {
         "name": "dbt tests",
         "ok": true,
-        "detail": "32 of 32 passed"
+        "detail": "39 of 39 passed"
       }
     ],
     "history_weeks": 52

@@ -147,8 +147,7 @@ def build_payload(conn, today: date | None = None) -> dict:
     big_banks = [
         {"name": n, "apy": float(a), "as_of": d.isoformat()}
         for n, a, d in conn.execute(
-            """SELECT bank_name, apy_pct, CAST(scrape_date AS DATE) FROM main.big_four_rates
-               WHERE product_type = 'savings'
+            """SELECT bank_name, apy_pct, as_of FROM STAGING.stg_big_bank_savings
                ORDER BY bank_name <> ?, bank_name""",
             [COMPARISON_BANK],
         ).fetchall()

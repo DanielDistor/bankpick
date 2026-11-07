@@ -66,11 +66,10 @@ def tmp_duckdb_with_marts():
         ('FEDFUNDS', DATE '2026-09-01', 4.10), ('FEDFUNDS', DATE '2026-10-01', 3.88),
         ('GS1', DATE '2026-10-01', 4.46)
       ) t(series_id, date_day, rate_pct)""")
-    c.execute("""CREATE TABLE main.big_four_rates AS SELECT * FROM (VALUES
-        ('JPMorgan Chase', 'savings', NULL, 0.01, DATE '2026-04-26'),
-        ('JPMorgan Chase', 'cd', 12, 4.00, DATE '2026-04-26'),
-        ('Citibank', 'savings', NULL, 0.04, DATE '2026-04-26')
-      ) t(bank_name, product_type, term_months, apy_pct, scrape_date)""")
+    c.execute("""CREATE TABLE STAGING.stg_big_bank_savings AS SELECT * FROM (VALUES
+        ('Citibank', 0.05, DATE '2026-11-06'),
+        ('JPMorgan Chase', 0.01, DATE '2026-11-06')
+      ) t(bank_name, apy_pct, as_of)""")
     yield c
     c.close()
 
@@ -87,8 +86,8 @@ def test_payload_shape(tmp_duckdb_with_marts):
     assert cit["min_balance_for_apy"] == 5000 and cit["min_opening"] == 100
     assert p["banks"][0]["promo"] is None and p["banks"][0]["url"] is None
     assert p["big_banks"] == [
-        {"name": "JPMorgan Chase", "apy": 0.01, "as_of": "2026-04-26"},
-        {"name": "Citibank", "apy": 0.04, "as_of": "2026-04-26"},
+        {"name": "JPMorgan Chase", "apy": 0.01, "as_of": "2026-11-06"},
+        {"name": "Citibank", "apy": 0.05, "as_of": "2026-11-06"},
     ]
 
 
