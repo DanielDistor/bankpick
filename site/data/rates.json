@@ -577,6 +577,13 @@
       "url": "https://www.bankrate.com/banking/reviews/happen-bank/"
     },
     {
+      "name": "Barclays",
+      "term_months": 24,
+      "apy": 4.75,
+      "min_deposit": 0,
+      "url": "https://www.bankrate.com/banking/reviews/barclays/"
+    },
+    {
       "name": "Marcus by Goldman Sachs",
       "term_months": 24,
       "apy": 4.4,
@@ -673,7 +680,7 @@
     }
   },
   "health": {
-    "generated_at": "2026-11-07T04:05:47Z",
+    "generated_at": "2026-11-07T17:19:18Z",
     "checks": [
       {
         "name": "Rates are fresh",
