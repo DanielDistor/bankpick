@@ -205,6 +205,18 @@ function onDashEdit() {
 }
 dashInput.addEventListener("input", onDashEdit);
 dashNeed.addEventListener("change", onDashEdit);
+
+// Back to the question, keeping what they typed; drops the share query so a refresh starts fresh too.
+$("restart").addEventListener("click", () => {
+  history.replaceState(null, "", location.pathname);
+  askInput.value = state.amount.toLocaleString("en-US");
+  askMonthly.value = (state.monthly || 500).toLocaleString("en-US");
+  document.querySelector(`.seg-btn[data-monthly="${state.monthly > 0 ? "yes" : "no"}"]`).click();
+  document.querySelector(`.need-btn[data-need="${state.need}"]`)?.click();
+  show("ask");
+  window.scrollTo(0, 0);
+  askInput.focus();
+});
 dashMonthly.addEventListener("input", onDashEdit);
 
 const toOpen = (b) => {
