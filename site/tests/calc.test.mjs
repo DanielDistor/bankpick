@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  project, projectBank, rankBanks, fdicSplit, treasuryEdge, parseShareParams, buildShareQuery, rateLabel,
+  project, projectBank, rankBanks, fdicSplit, treasuryEdge, parseShareParams, buildShareQuery, rateLabel, showdown, leaderStats,
 } from "../js/calc.js";
 
 const near = (actual, expected, tol = 1) =>
@@ -125,4 +125,33 @@ test("rankBanks: monthly-deposit requirement gates eligibility", () => {
   const banks = [bank("Happen", 4.2, { min_monthly_deposit: 250 }), bank("Other", 4.0)];
   assert.deepEqual(rankBanks(banks, { principal: 25000, monthly: 0, years: 10 }).ranked.map((b) => b.name), ["Other"]);
   assert.equal(rankBanks(banks, { principal: 25000, monthly: 250, years: 10 }).ranked[0].name, "Happen");
+});
+
+test("showdown: big banks, then the next 4 ranked banks weakest first, then the winner", () => {
+  const banks = [bank("A", 4.27), bank("B", 4.2), bank("C", 4.1), bank("D", 4.0), bank("E", 3.9), bank("F", 3.8)];
+  const big = [{ name: "JPMorgan Chase", apy: 0.01, as_of: "2026-04-26" }, { name: "Citibank", apy: 0.04, as_of: "2026-04-26" }];
+  const s = showdown(banks, big, { principal: 25000, monthly: 0, years: 10 });
+  assert.deepEqual(s.big.map((b) => b.name), ["JPMorgan Chase", "Citibank"]);
+  assert.deepEqual(s.rivals.map((b) => b.name), ["E", "D", "C", "B"]);
+  assert.equal(s.winner.name, "A");
+  near(s.big[0].final, 25000 * 1.0001 ** 10);
+  near(s.winner.final, 25000 * 1.0427 ** 10);
+  assert.ok(s.rivals.every((r) => r.final < s.winner.final));
+});
+
+test("showdown: winner matches rankBanks even when the highest APY is ineligible", () => {
+  const banks = [bank("Rich", 5, { min_balance_for_apy: 100000 }), bank("A", 4.27), bank("B", 4.2)];
+  const s = showdown(banks, [], { principal: 25000, monthly: 0, years: 10 });
+  assert.equal(s.winner.name, "A");
+  assert.deepEqual(s.rivals.map((b) => b.name), ["B"]);
+  assert.deepEqual(s.big, []);
+});
+
+test("leaderStats: weeks at #1 per bank, most first, and how often #1 changed", () => {
+  const L = (name) => ({ week: "x", name, apy: 4 });
+  const s = leaderStats([L("Vio"), L("Vio"), L("Peak"), L("Vio"), L("Peak"), L("Peak"), L("Peak")]);
+  assert.deepEqual(s.weeks, [{ name: "Peak", weeks: 4 }, { name: "Vio", weeks: 3 }]);
+  assert.equal(s.changes, 3);
+  assert.equal(s.current, "Peak");
+  assert.deepEqual(leaderStats([]), { weeks: [], changes: 0, current: null });
 });

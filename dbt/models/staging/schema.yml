@@ -30,3 +30,13 @@ models:
           - accepted_values:
               arguments:
                 values: ['online', 'traditional']
+
+  - name: stg_big_bank_savings
+    description: "Latest savings APY per big bank (Chase, BofA, Wells Fargo, Citi), confirmed daily."
+    columns:
+      - name: bank_name
+        tests: [not_null, unique]
+      - name: apy_pct
+        tests: [not_null]
+      - name: as_of
+        tests: [not_null]

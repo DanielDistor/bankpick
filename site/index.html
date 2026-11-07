@@ -15,6 +15,7 @@
 
 <!-- 1. ASK -->
 <section class="screen on" id="ask">
+  <div class="glow" aria-hidden="true"></div>
   <form class="fade" id="askForm" novalidate>
     <h1>How much are you looking to invest?</h1>
     <p>We'll find where it grows the most.</p>
@@ -26,6 +27,10 @@
     <label class="monthly-input" id="monthlyWrap" hidden><span>$</span><input id="askMonthly" class="mono" value="500" inputmode="numeric" autocomplete="off" aria-label="Monthly contribution"><em>/ month</em></label>
     <div><button class="go" type="submit">Show me →</button></div>
   </form>
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-cap">Savings interest rates · per year (APY)</div>
+    <div class="ticker-win"><div class="ticker-track mono" id="ticker"></div></div>
+  </div>
 </section>
 
 <!-- 2. LOADING -->
@@ -35,6 +40,15 @@
     <div class="step"><div class="dot"></div><div><div class="t">Scanning bank rates</div><div class="sub" id="s2"></div></div><div class="r mono" id="r2"></div></div>
     <div class="step"><div class="dot"></div><div><div class="t">Growing your money</div><div class="sub" id="s3"></div></div><div class="r mono" id="r3"></div></div>
     <div class="bar"><i id="prog"></i></div>
+  </div>
+</section>
+
+<!-- 2b. SHOWDOWN: big banks and runners-up get crossed out, the winner gets the check -->
+<section class="screen" id="elim" aria-live="polite">
+  <div class="elim">
+    <div class="el-head" id="elHead"></div>
+    <div class="el-cols"><div id="elColBank">Bank · your money in 10 yrs</div><div>Interest / year</div><div></div></div>
+    <div id="elCards"></div>
   </div>
 </section>
 
@@ -58,13 +72,42 @@
       <div class="line" id="treasury" hidden></div>
     </div>
 
+    <div class="tiles" id="tiles"></div>
+
+    <div class="card brief" id="briefCard" hidden>
+      <div class="brief-top"><div class="eyebrow">Today's brief · <span id="briefDate"></span></div><a class="rss" href="data/feed.xml" target="_blank" rel="noopener">RSS feed</a></div>
+      <h3 id="briefHead"></h3>
+      <ul id="briefItems"></ul>
+      <details id="briefMore" hidden><summary>Earlier briefs</summary><ul id="briefOld"></ul></details>
+    </div>
+
     <div class="growth">
       <div class="head">
         <div><div class="big mono" id="gBig"></div><div class="cap" id="gCap"></div></div>
         <div class="vs"><span id="gVsLabel">At Chase instead</span><b class="mono" id="gVs"></b></div>
       </div>
-      <svg id="chart" viewBox="0 0 680 200" width="100%" role="img" aria-label="Growth over time"></svg>
+      <div class="legend" id="gLegend"></div>
+      <div class="plot"><svg id="chart" viewBox="0 0 680 200" width="100%" role="img" aria-label="Growth over time"></svg><div class="tip" id="gTip" hidden></div></div>
       <div class="tabs" id="tabs"></div>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow">Your money vs. the big banks</div>
+      <p class="card-sub" id="bbSub"></p>
+      <div class="hbars" id="bigBars"></div>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow">Best online rate vs. the Fed · past year</div>
+      <p class="card-sub" id="trSub"></p>
+      <div class="legend" id="trLegend"></div>
+      <div class="plot"><svg id="trend" viewBox="0 0 680 220" width="100%" role="img" aria-label="Best online savings rate and the Fed funds rate over the past year"></svg><div class="tip" id="trTip" hidden></div></div>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow">Who's held the #1 rate · past year</div>
+      <p class="card-sub" id="ldSub"></p>
+      <div class="hbars" id="leaderBars"></div>
     </div>
 
     <div class="list">
@@ -73,6 +116,13 @@
     </div>
 
     <div class="note" id="note" hidden></div>
+
+    <div class="card health" id="healthCard" hidden>
+      <div class="brief-top"><div class="eyebrow">Data health</div><span class="status" id="healthStatus"></span></div>
+      <p class="card-sub" id="healthSub"></p>
+      <ul class="checks" id="healthChecks"></ul>
+      <div class="flags" id="healthFlags"></div>
+    </div>
     <div class="foot">High-yield savings accounts, FDIC insured. Rates from Bankrate, refreshed daily. Not financial advice.</div>
   </div>
 </section>

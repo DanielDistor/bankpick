@@ -132,8 +132,10 @@ _Figures as of the November 5, 2026 refresh (Fed funds rate 3.88%); the live sit
 ## How the site works
 
 1. **Ask:** "How much are you looking to invest?" plus an optional monthly contribution.
-2. **Loading:** checks the Fed rate, scans the latest bank rates, and grows the money (a short animation over the day's data; nothing is scraped live).
-3. **Dashboard:** the best account for that amount, its growth chart against Chase, the next four options, a 1-year Treasury line when a Treasury pays more, and an FDIC split when the amount is over $250,000. Amounts are editable in place, and the URL (e.g. `?amount=25000&monthly=500`) is shareable.
+2. **Loading:** checks the Fed rate, scans the latest bank rates, and grows the money, then a showdown crosses out Chase, Bank of America, Wells Fargo and Citi and the next four banks before checking the winner (an animation over the day's data; nothing is scraped live).
+3. **Dashboard:** the best account for that amount, stat tiles, its growth chart against Chase, what the money becomes at each big bank, the best online rate vs. the Fed funds rate over the past year, who has held the #1 rate, the next four options, a 1-year Treasury line when a Treasury pays more, and an FDIC split over $250,000. Amounts are editable in place, and the URL (e.g. `?amount=25000&monthly=500`) is shareable.
+4. **Daily brief:** each refresh compares today's data with yesterday's and writes what changed ("EverBank takes #1 at 4.35%…", rate cuts, promos, Fed moves). The last 30 days are kept and published as an RSS feed (`site/data/feed.xml`).
+5. **Data health:** before publishing, the pipeline checks its own output (freshness of Bankrate, FRED and big-bank rates, bank count, APY range, duplicates, dbt test results) and flags one-week spikes that revert, such as Accordia Bank's 5.00% on 8/18/2026. Flagged points are shown on the site but left out of rankings and badges.
 
 Only Bankrate's editorial picks are recommended. Sponsored listings are used only to read promo terms for those same banks. Track-record badges ("Top 3 for 5 weeks", "Rate cut 0.10%") come from each bank's weekly rate history.
 
