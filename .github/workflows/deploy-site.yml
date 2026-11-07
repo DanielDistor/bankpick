@@ -34,6 +34,10 @@ jobs:
         with:
           ref: main   # pick up the data commit the refresh just pushed
 
+      - name: Stamp asset URLs with this commit
+        # ?v=dev -> ?v=<sha> so a browser never pairs a cached old script with a new page
+        run: sed -i "s/?v=dev/?v=${GITHUB_SHA::7}/g" site/index.html site/js/app.js
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 

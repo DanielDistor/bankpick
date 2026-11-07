@@ -1,7 +1,7 @@
 import {
   project, projectBank, rankBanks, fdicSplit, parseShareParams, buildShareQuery, leaderStats, planOptions,
   FDIC_LIMIT, MAX_AMOUNT, MAX_MONTHLY,
-} from "./calc.js";
+} from "./calc.js?v=dev";
 
 const $ = (id) => document.getElementById(id);
 const HORIZONS = [1, 5, 10, 20];
@@ -62,7 +62,14 @@ document.querySelectorAll(".need-btn").forEach((btn) => btn.addEventListener("cl
 }));
 $("askForm").addEventListener("submit", (e) => { e.preventDefault(); start(); });
 
+let running = false;
 async function start() {
+  if (running) return; // a double click shouldn't start two runs
+  running = true;
+  try { await run(); } finally { running = false; }
+}
+
+async function run() {
   state.amount = Math.max(1, num(askInput) || 25000);
   state.monthly = $("monthlyWrap").hidden ? 0 : num(askMonthly);
   state.need = Number(document.querySelector(".need-btn.on")?.dataset.need || 0);
@@ -77,6 +84,10 @@ async function start() {
 async function playLoading(d) {
   show("load");
   const steps = [...document.querySelectorAll(".step")];
+  // reset from any earlier run (Start over brings people back here)
+  steps.forEach((s) => { s.className = "step"; });
+  ["s1", "s2", "s3", "r1", "r2", "r3"].forEach((id) => { $(id).textContent = ""; });
+  $("prog").style.width = "0%";
   const total = 7000, t0 = performance.now(); // matches the step timings below
   const tick = () => {
     const p = Math.min(1, (performance.now() - t0) / total);
