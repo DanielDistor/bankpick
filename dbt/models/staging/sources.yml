@@ -27,6 +27,14 @@ sources:
         columns:
           - name: rate_date
             tests: [not_null]
+      - name: bankrate_cd_offers
+        columns:
+          - name: bank_name
+            tests: [not_null]
+          - name: term_months
+            tests: [not_null]
+          - name: apy_pct
+            tests: [not_null]
       - name: big_bank_savings_rates
         columns:
           - name: bank_name

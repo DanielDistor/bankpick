@@ -40,3 +40,11 @@ models:
         tests: [not_null]
       - name: as_of
         tests: [not_null]
+
+  - name: stg_cd_offers
+    description: "Best CD offers by term (months) from Bankrate, newest snapshot."
+    columns:
+      - name: apy_pct
+        tests: [not_null]
+      - name: term_months
+        tests: [not_null]

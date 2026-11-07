@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  project, projectBank, rankBanks, fdicSplit, treasuryEdge, parseShareParams, buildShareQuery, rateLabel, showdown, leaderStats,
+  project, projectBank, rankBanks, fdicSplit, treasuryEdge, parseShareParams, buildShareQuery, rateLabel, showdown, leaderStats, planOptions, treasuryApy, NEEDS,
 } from "../js/calc.js";
 
 const near = (actual, expected, tol = 1) =>
@@ -94,15 +94,15 @@ test("parseShareParams: validates and clamps", () => {
   assert.equal(parseShareParams("?amount=abc"), null);
   assert.equal(parseShareParams("?amount=-5"), null);
   assert.equal(parseShareParams(""), null);
-  assert.deepEqual(parseShareParams("?amount=25000&monthly=1e9"), { amount: 25000, monthly: 0 });
-  assert.deepEqual(parseShareParams("?amount=25000&monthly=500"), { amount: 25000, monthly: 500 });
-  assert.deepEqual(parseShareParams("?amount=999999999999"), { amount: 100000000, monthly: 0 });
-  assert.deepEqual(parseShareParams("?amount=25000&monthly=-3"), { amount: 25000, monthly: 0 });
+  assert.deepEqual(parseShareParams("?amount=25000&monthly=1e9"), { amount: 25000, monthly: 0, need: 0 });
+  assert.deepEqual(parseShareParams("?amount=25000&monthly=500"), { amount: 25000, monthly: 500, need: 0 });
+  assert.deepEqual(parseShareParams("?amount=999999999999"), { amount: 100000000, monthly: 0, need: 0 });
+  assert.deepEqual(parseShareParams("?amount=25000&monthly=-3"), { amount: 25000, monthly: 0, need: 0 });
 });
 
 test("buildShareQuery", () => {
-  assert.equal(buildShareQuery({ amount: 25000, monthly: 500 }), "?amount=25000&monthly=500");
-  assert.equal(buildShareQuery({ amount: 25000, monthly: 0 }), "?amount=25000");
+  assert.equal(buildShareQuery({ amount: 25000, monthly: 500, need: 0 }), "?amount=25000&monthly=500");
+  assert.equal(buildShareQuery({ amount: 25000, monthly: 0, need: 0 }), "?amount=25000");
 });
 
 test("rateLabel", () => {
@@ -154,4 +154,64 @@ test("leaderStats: weeks at #1 per bank, most first, and how often #1 changed", 
   assert.equal(s.changes, 3);
   assert.equal(s.current, "Peak");
   assert.deepEqual(leaderStats([]), { weeks: [], changes: 0, current: null });
+});
+
+const PLAN_DATA = {
+  banks: [bank("Peak Bank", 4.27), bank("EverBank", 4.20)],
+  cds: [
+    { name: "Happen Bank", term_months: 24, apy: 4.76, min_deposit: 500, url: "https://x/" },
+    { name: "Rich CD", term_months: 24, apy: 6.00, min_deposit: 100000, url: null },
+    { name: "Other term", term_months: 12, apy: 9.00, min_deposit: 0, url: null },
+  ],
+  treasuries: { 24: { rate: 4.74, as_of: "2026-10-01" } },
+};
+
+test("treasuryApy: semiannual bond yield to APY", () => {
+  near(treasuryApy(4.74) * 100, 4.796, 0.001);
+});
+
+test("NEEDS: anytime plus 1, 2, 3, 5 years", () => {
+  assert.deepEqual(NEEDS, [0, 12, 24, 36, 60]);
+});
+
+test("planOptions: compares savings, matching-term CDs and the Treasury; skips CDs you can't afford", () => {
+  const { options } = planOptions(PLAN_DATA, { principal: 25000, monthly: 0, months: 24 });
+  assert.deepEqual(options.map((o) => [o.kind, o.name]), [
+    ["treasury", "2-year Treasury"], ["cd", "Happen Bank"], ["savings", "Peak Bank"], ["savings", "EverBank"]]);
+  near(options[1].final, 25000 * 1.0476 ** 2);
+  near(options[0].final, 25000 * (1 + treasuryApy(4.74)) ** 2);
+  assert.equal(options[1].series.length, 25);
+  assert.equal(options[1].apy, 4.76);
+});
+
+test("planOptions: monthly contributions go to the top savings account alongside a CD or Treasury", () => {
+  const { options } = planOptions(PLAN_DATA, { principal: 25000, monthly: 500, months: 24 });
+  const cd = options.find((o) => o.kind === "cd");
+  const toSavings = project({ principal: 0, monthly: 500, apy: 4.27, years: 2 }).at(-1);
+  near(cd.final, 25000 * 1.0476 ** 2 + toSavings);
+  assert.equal(cd.monthlyTo, "Peak Bank");
+});
+
+test("planOptions: a big enough amount unlocks the high-minimum CD", () => {
+  const { options } = planOptions(PLAN_DATA, { principal: 150000, monthly: 0, months: 24 });
+  assert.equal(options[0].name, "Rich CD");
+});
+
+test("planOptions: no CD or Treasury for the term still returns savings", () => {
+  const { options } = planOptions(PLAN_DATA, { principal: 25000, monthly: 0, months: 36 });
+  assert.deepEqual(options.map((o) => o.kind), ["savings", "savings"]);
+});
+
+test("share params carry the timeline, only from the allowed set", () => {
+  assert.equal(parseShareParams("?amount=25000&need=24").need, 24);
+  assert.equal(parseShareParams("?amount=25000&need=7").need, 0);
+  assert.equal(parseShareParams("?amount=25000").need, 0);
+  assert.equal(buildShareQuery({ amount: 25000, monthly: 0, need: 24 }), "?amount=25000&need=24");
+  assert.equal(buildShareQuery({ amount: 25000, monthly: 500, need: 0 }), "?amount=25000&monthly=500");
+});
+
+test("planOptions: on a tie, the lower minimum deposit wins", () => {
+  const data = { banks: [bank("Peak Bank", 4.27)], treasuries: {},
+    cds: [{ name: "A High Min", term_months: 60, apy: 5, min_deposit: 10000 }, { name: "Z Low Min", term_months: 60, apy: 5, min_deposit: 100 }] };
+  assert.equal(planOptions(data, { principal: 25000, monthly: 0, months: 60 }).top.name, "Z Low Min");
 });

@@ -19,6 +19,7 @@ FEED_PATH = REPO_ROOT / "site" / "data" / "feed.xml"
 DBT_RESULTS = REPO_ROOT / "dbt" / "target" / "run_results.json"
 SITE_URL = "https://danieldistor.github.io/deposit-pricing-analytics-banking/"
 COMPARISON_BANK = "JPMorgan Chase"
+TREASURY_SERIES = {12: "GS1", 24: "GS2", 36: "GS3", 60: "GS5"}  # constant-maturity yields
 
 History = dict[str, list[tuple[date, float]]]
 
@@ -160,6 +161,16 @@ def build_payload(conn, today: date | None = None) -> dict:
         "flags": flags,
     }
 
+    cds = [
+        {"name": n, "term_months": int(t), "apy": float(a), "min_deposit": _num(m or 0), "url": u}
+        for n, t, a, m, u in conn.execute(
+            """SELECT bank_name, term_months, apy_pct, min_deposit, url FROM STAGING.stg_cd_offers
+               ORDER BY term_months, apy_pct DESC, bank_name"""
+        ).fetchall()
+    ]
+    treasuries = {str(months): t for months, sid in TREASURY_SERIES.items()
+                  if (t := _latest_fred(conn, sid))}
+
     return {
         "as_of": as_of.isoformat(),
         "fed_funds": _latest_fred(conn, "FEDFUNDS"),
@@ -167,6 +178,8 @@ def build_payload(conn, today: date | None = None) -> dict:
         "banks": banks,
         "big_banks": big_banks,
         "trend": trend,
+        "cds": cds,
+        "treasuries": treasuries,
     }
 
 

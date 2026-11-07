@@ -3,6 +3,8 @@
 export const FDIC_LIMIT = 250000;
 export const MAX_AMOUNT = 100000000;
 export const MAX_MONTHLY = 1000000;
+/** "When will you need this money?" in months; 0 = anytime. */
+export const NEEDS = [0, 12, 24, 36, 60];
 
 const monthlyRate = (apyPct) => (1 + apyPct / 100) ** (1 / 12) - 1;
 
@@ -95,11 +97,13 @@ export function parseShareParams(search) {
   const rawMonthly = Number(params.get("monthly") ?? 0);
   const monthly = Number.isFinite(rawMonthly) && rawMonthly >= 0 && rawMonthly <= MAX_MONTHLY
     ? Math.round(rawMonthly) : 0;
-  return { amount: Math.min(MAX_AMOUNT, Math.max(1, Math.round(amount))), monthly };
+  const need = Number(params.get("need") ?? 0);
+  return { amount: Math.min(MAX_AMOUNT, Math.max(1, Math.round(amount))), monthly,
+    need: NEEDS.includes(need) ? need : 0 };
 }
 
-export function buildShareQuery({ amount, monthly }) {
-  return monthly > 0 ? `?amount=${amount}&monthly=${monthly}` : `?amount=${amount}`;
+export function buildShareQuery({ amount, monthly, need = 0 }) {
+  return `?amount=${amount}` + (monthly > 0 ? `&monthly=${monthly}` : "") + (need > 0 ? `&need=${need}` : "");
 }
 
 export function rateLabel(bank) {
@@ -136,4 +140,48 @@ export function leaderStats(leaders) {
   const weeks = [...counts].map(([name, weeks]) => ({ name, weeks }))
     .sort((a, b) => b.weeks - a.weeks || a.name.localeCompare(b.name));
   return { weeks, changes, current: leaders.at(-1)?.name ?? null };
+}
+
+/** Treasury constant-maturity yields are semiannual bond-equivalent; convert to APY (as a fraction). */
+export const treasuryApy = (yieldPct) => (1 + yieldPct / 200) ** 2 - 1;
+
+const termLabel = (months) => (months % 12 ? `${months}-month` : `${months / 12}-year`);
+
+/**
+ * For money needed in `months`: the best savings accounts, every CD of exactly that
+ * term the amount can open, and the Treasury of that term, ranked by what they end at.
+ * The lump sum goes in the CD/Treasury; monthly contributions can't, so they're
+ * projected into the top savings account alongside it.
+ */
+export function planOptions(data, { principal, monthly = 0, months }) {
+  const years = months / 12;
+  const { ranked } = rankBanks(data.banks, { principal, monthly, years });
+  const savings = ranked.slice(0, 4).map((b) => {
+    const series = projectBank(b, { principal, monthly, years });
+    return { kind: "savings", name: b.name, apy: b.apy, bank: b, url: b.url, series, final: series.at(-1) };
+  });
+  const home = ranked[0];
+  const side = home ? projectBank(home, { principal: 0, monthly, years }) : Array(months + 1).fill(0);
+  const locked = (apyFrac) => side.map((v, m) => principal * (1 + apyFrac) ** (m / 12) + v);
+
+  const cds = (data.cds || [])
+    .filter((c) => c.term_months === months && principal >= (c.min_deposit || 0))
+    .map((c) => {
+      const series = locked(c.apy / 100);
+      return { kind: "cd", name: c.name, apy: c.apy, term_months: months, min_deposit: c.min_deposit,
+        url: c.url, series, final: series.at(-1), monthlyTo: monthly > 0 && home ? home.name : null };
+    });
+
+  const t = data.treasuries?.[months] ?? data.treasuries?.[String(months)];
+  const treasury = t ? [(() => {
+    const apy = treasuryApy(t.rate);
+    const series = locked(apy);
+    return { kind: "treasury", name: `${termLabel(months)} Treasury`, apy: +(apy * 100).toFixed(2), yield: t.rate,
+      term_months: months, url: "https://www.treasurydirect.gov/marketable-securities/treasury-notes/",
+      series, final: series.at(-1), monthlyTo: monthly > 0 && home ? home.name : null };
+  })()] : [];
+
+  const options = [...cds, ...treasury, ...savings]
+    .sort((a, b) => b.final - a.final || (a.min_deposit || 0) - (b.min_deposit || 0) || a.name.localeCompare(b.name));
+  return { options, top: options[0] };
 }

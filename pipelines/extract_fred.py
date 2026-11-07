@@ -13,7 +13,7 @@ except ImportError:  # run as `python pipelines/extract_fred.py`
 load_dotenv()
 
 FRED_API_KEY = os.getenv("FRED_API_KEY")
-SERIES = ["FEDFUNDS", "DFF", "TB3MS", "GS1", "GS2", "GS5", "GS10", "DPCREDIT"]
+SERIES = ["FEDFUNDS", "DFF", "TB3MS", "GS1", "GS2", "GS3", "GS5", "GS10", "DPCREDIT"]
 OBSERVATION_START = "2000-01-01"
 
 
