@@ -32,16 +32,17 @@ On $25k plus $500 a month, that's $27,285 more after 10 years just from picking 
 
 ## What's on the dashboard
 
-| Your money vs the big banks | Best online rate vs the Fed |
-|---|---|
-| ![Big banks](docs/screenshots/big-banks.png) | ![Rate vs Fed](docs/screenshots/rate-vs-fed.png) |
+Built like a rates sheet: numbers in labeled cells and tables, not paragraphs
 
-- The pick in plain words: where your money goes, the rate, and what you'll have
-- The next 3 options right under it, with what each gets you and how much less
-- **Today's brief:** what changed since yesterday, also as an [RSS feed](https://danieldistor.github.io/deposit-pricing-analytics-banking/data/feed.xml)
-- Growth chart vs Chase, plus what the same money does at Chase, BofA, Wells Fargo and Citi
-- Best online rate vs the Fed over the past year, and who's held #1
-- An FDIC split over $250k, and the data health panel
+- **#1 card:** the pick, its APY (in bps vs Fed funds), what you'll have, interest earned, and how far ahead of Chase it puts you
+- **#2–#4 card:** the runner-ups with APY, value and how much less than #1, plus **See all** for the full ranked table
+- **Full table:** every option with product, minimum, liquidity (anytime or locked until a date), value and gap to #1, with Chase, BofA, Wells Fargo and Citi pinned at the bottom for reference
+- **Charts:** growth vs Chase, and the best online rate vs Fed funds over the past year with the spread in bps
+- **Weeks at #1**, the **daily brief** (also an [RSS feed](https://danieldistor.github.io/deposit-pricing-analytics-banking/data/feed.xml)), and **data health**
+
+| Full ranked table | Best online rate vs the Fed |
+|---|---|
+| ![All options](docs/screenshots/big-banks.png) | ![Rate vs Fed](docs/screenshots/rate-vs-fed.png) |
 
 <p align="center"><img src="docs/screenshots/mobile-ask.png" width="260" alt="Phone: ask"> &nbsp; <img src="docs/screenshots/mobile-dashboard.png" width="260" alt="Phone: dashboard"></p>
 

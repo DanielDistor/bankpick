@@ -218,7 +218,7 @@ function render() {
   $("pickKind").textContent = `${PRODUCT[top.kind]} · ${top.liq}`;
   $("pickName").textContent = top.kind === "cd" ? `${top.name} · ${need / 12}-year CD` : top.name;
   const stats = [
-    ["APY", pct(top.apy), "", top.promo ? `${pct(top.promo.apy)} for ${top.promo.months} mo first` : fed != null ? `${Math.round((top.apy - fed) * 100)} bps over Fed funds` : ""],
+    ["APY", pct(top.apy), "", top.promo ? `${pct(top.promo.apy)} for ${top.promo.months} mo first` : fed != null ? `${(top.apy - fed) >= 0 ? "+" : "−"}${Math.abs(Math.round((top.apy - fed) * 100))} bps vs Fed funds` : ""],
     [`Value in ${years} yrs`, money(top.final), "g", `${money(deposited)} deposited`],
     ["Interest earned", money(top.final - deposited), "", `over ${yrsText(years)}`],
     chase && ["vs Chase", signed(top.final - chaseFinal), "g", `Chase pays ${pct(chase.apy)}`],
