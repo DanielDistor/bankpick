@@ -484,8 +484,196 @@
       }
     ]
   },
+  "cds": [
+    {
+      "name": "Bank5 Connect",
+      "term_months": 3,
+      "apy": 4.3,
+      "min_deposit": 500,
+      "url": null
+    },
+    {
+      "name": "Popular Direct",
+      "term_months": 3,
+      "apy": 4.3,
+      "min_deposit": 10000,
+      "url": null
+    },
+    {
+      "name": "BTG Pactual Bank",
+      "term_months": 3,
+      "apy": 4.1,
+      "min_deposit": 500,
+      "url": null
+    },
+    {
+      "name": "Happen Bank",
+      "term_months": 6,
+      "apy": 4.4,
+      "min_deposit": 500,
+      "url": null
+    },
+    {
+      "name": "Quorum Federal Credit Union",
+      "term_months": 6,
+      "apy": 4.4,
+      "min_deposit": 100,
+      "url": null
+    },
+    {
+      "name": "Popular Direct",
+      "term_months": 6,
+      "apy": 4.35,
+      "min_deposit": 10000,
+      "url": null
+    },
+    {
+      "name": "BTG Pactual Bank",
+      "term_months": 12,
+      "apy": 4.65,
+      "min_deposit": 500,
+      "url": null
+    },
+    {
+      "name": "CFG Bank",
+      "term_months": 12,
+      "apy": 4.65,
+      "min_deposit": 500,
+      "url": null
+    },
+    {
+      "name": "Sallie Mae Bank",
+      "term_months": 12,
+      "apy": 4.6,
+      "min_deposit": 2500,
+      "url": null
+    },
+    {
+      "name": "Quorum Federal Credit Union",
+      "term_months": 12,
+      "apy": 4.5,
+      "min_deposit": 100,
+      "url": "https://www.bankrate.com/banking/reviews/quorum-federal-credit-union/"
+    },
+    {
+      "name": "Bread Savings",
+      "term_months": 18,
+      "apy": 4.85,
+      "min_deposit": 1500,
+      "url": "https://www.bankrate.com/banking/reviews/bread-savings/"
+    },
+    {
+      "name": "First National Bank of America",
+      "term_months": 18,
+      "apy": 4.4,
+      "min_deposit": 1000,
+      "url": "https://www.bankrate.com/banking/reviews/first-national-bank-of-america/"
+    },
+    {
+      "name": "Happen Bank",
+      "term_months": 24,
+      "apy": 4.76,
+      "min_deposit": 500,
+      "url": "https://www.bankrate.com/banking/reviews/happen-bank/"
+    },
+    {
+      "name": "Marcus by Goldman Sachs",
+      "term_months": 24,
+      "apy": 4.4,
+      "min_deposit": 500,
+      "url": "https://www.bankrate.com/banking/reviews/marcus/"
+    },
+    {
+      "name": "BTG Pactual Bank",
+      "term_months": 36,
+      "apy": 4.85,
+      "min_deposit": 500,
+      "url": null
+    },
+    {
+      "name": "Popular Direct",
+      "term_months": 36,
+      "apy": 4.85,
+      "min_deposit": 10000,
+      "url": "https://www.bankrate.com/banking/reviews/popular-direct/"
+    },
+    {
+      "name": "CFG Bank",
+      "term_months": 36,
+      "apy": 4.82,
+      "min_deposit": 500,
+      "url": null
+    },
+    {
+      "name": "Sallie Mae Bank",
+      "term_months": 36,
+      "apy": 4.75,
+      "min_deposit": 2500,
+      "url": "https://www.bankrate.com/banking/reviews/sallie-mae-bank/"
+    },
+    {
+      "name": "E*TRADE",
+      "term_months": 36,
+      "apy": 4.55,
+      "min_deposit": 0,
+      "url": "https://www.bankrate.com/banking/reviews/morgan-stanley-private/"
+    },
+    {
+      "name": "BTG Pactual Bank",
+      "term_months": 48,
+      "apy": 4.85,
+      "min_deposit": 500,
+      "url": "https://www.bankrate.com/banking/reviews/btg-pactual/"
+    },
+    {
+      "name": "Popular Direct",
+      "term_months": 60,
+      "apy": 5.0,
+      "min_deposit": 10000,
+      "url": null
+    },
+    {
+      "name": "Quorum Federal Credit Union",
+      "term_months": 60,
+      "apy": 5.0,
+      "min_deposit": 100,
+      "url": null
+    },
+    {
+      "name": "Sallie Mae Bank",
+      "term_months": 60,
+      "apy": 5.0,
+      "min_deposit": 2500,
+      "url": null
+    },
+    {
+      "name": "Synchrony Bank",
+      "term_months": 60,
+      "apy": 4.75,
+      "min_deposit": 0,
+      "url": "https://www.bankrate.com/banking/reviews/synchrony-bank/"
+    }
+  ],
+  "treasuries": {
+    "12": {
+      "rate": 4.46,
+      "as_of": "2026-10-01"
+    },
+    "24": {
+      "rate": 4.74,
+      "as_of": "2026-10-01"
+    },
+    "36": {
+      "rate": 4.84,
+      "as_of": "2026-10-01"
+    },
+    "60": {
+      "rate": 4.93,
+      "as_of": "2026-10-01"
+    }
+  },
   "health": {
-    "generated_at": "2026-11-07T03:52:52Z",
+    "generated_at": "2026-11-07T04:05:47Z",
     "checks": [
       {
         "name": "Rates are fresh",
@@ -520,7 +708,7 @@
       {
         "name": "dbt tests",
         "ok": true,
-        "detail": "46 of 46 passed"
+        "detail": "51 of 51 passed"
       }
     ],
     "history_weeks": 52
