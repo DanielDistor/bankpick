@@ -55,76 +55,68 @@
 
 <!-- 3. DASHBOARD -->
 <section class="screen" id="dash">
-  <div class="col">
-    <div class="bar-top">
-      <div class="pills">
-        <label class="amt"><span>$</span><input id="dashInput" class="mono" inputmode="numeric" autocomplete="off" aria-label="Amount to invest"></label>
-        <label class="amt"><span>+$</span><input id="dashMonthly" class="mono small" inputmode="numeric" autocomplete="off" aria-label="Monthly contribution"><em>/mo</em></label>
-        <label class="amt need-pill"><span>Need it</span><select id="dashNeed" aria-label="When will you need this money?">
-          <option value="0">anytime</option><option value="12">in 1 yr</option><option value="24">in 2 yrs</option><option value="36">in 3 yrs</option><option value="60">in 5 yrs</option>
-        </select></label>
-      </div>
-      <div class="top-right"><span class="asof" id="asOf"></span><button type="button" class="restart" id="restart">↺ Start over</button></div>
+  <div class="wrap">
+    <div class="topbar">
+      <label class="amt"><span>Amount</span><em>$</em><input id="dashInput" inputmode="numeric" autocomplete="off" aria-label="Amount to invest"></label>
+      <label class="amt"><span>Monthly</span><em>$</em><input id="dashMonthly" class="small" inputmode="numeric" autocomplete="off" aria-label="Monthly contribution"></label>
+      <label class="amt"><span>Need it</span><select id="dashNeed" aria-label="When will you need this money?">
+        <option value="0">anytime</option><option value="12">in 1 yr</option><option value="24">in 2 yrs</option><option value="36">in 3 yrs</option><option value="60">in 5 yrs</option>
+      </select></label>
+      <span class="sp"></span>
+      <span class="asof" id="asOf"></span>
+      <button type="button" class="restart" id="restart">↺ Start over</button>
     </div>
 
-    <div class="answer">
-      <h2 id="ansH"></h2>
-      <p class="why" id="ansWhy"></p>
-      <div class="meta" id="ansMeta"></div>
-      <div class="line" id="fallback" hidden></div>
+    <div class="row top">
+      <section class="panel pick" aria-labelledby="pickName">
+        <div class="ph"><span class="t">#1 · Best place for your money</span><span class="r" id="pickKind"></span></div>
+        <div class="pick-name" id="pickName"></div>
+        <div class="stats" id="pickStats"></div>
+        <div class="pick-foot" id="pickFoot"></div>
+      </section>
+      <section class="panel">
+        <div class="ph"><span class="t">#2 – #4 · Runner-ups</span><span class="r" id="runHead"></span></div>
+        <div class="tbl"><table><thead><tr><th class="num">#</th><th>Institution</th><th class="c-prod">Product</th><th class="num">APY</th><th class="num">Value</th><th class="num">vs #1</th></tr></thead><tbody id="runRows"></tbody></table></div>
+        <button type="button" class="all" id="allBtn" aria-expanded="false" aria-controls="allPanel"></button>
+      </section>
     </div>
 
-    <div class="list next">
-      <div class="eyebrow" id="listHead">Other great options · first year</div>
-      <div id="rows"></div>
-    </div>
-    <div class="note" id="note" hidden></div>
+    <section class="panel full" id="allPanel" hidden>
+      <div class="ph"><span class="t" id="allHead"></span><span class="r">big banks shown for reference</span></div>
+      <div class="tbl"><table><thead><tr><th class="num">#</th><th>Institution</th><th class="c-prod">Product</th><th class="num">APY</th><th class="num c-min">Min</th><th class="c-liq">Liquidity</th><th class="num">Value</th><th class="num c-gap">vs #1</th></tr></thead><tbody id="allRows"></tbody></table></div>
+    </section>
 
-    <div class="pair main-side">
-      <div class="growth">
-        <div class="head">
-          <div><div class="big mono" id="gBig"></div><div class="cap" id="gCap"></div></div>
-          <div class="vs"><span id="gVsLabel">At Chase instead</span><b class="mono" id="gVs"></b></div>
-        </div>
+    <div class="row two">
+      <section class="panel">
+        <div class="ph"><span class="t" id="gTitle"></span><span class="r" id="gGap"></span></div>
         <div class="legend" id="gLegend"></div>
-        <div class="plot"><svg id="chart" viewBox="0 0 680 200" width="100%" role="img" aria-label="Growth over time"></svg><div class="tip" id="gTip" hidden></div></div>
+        <div class="plot"><svg id="chart" role="img" aria-label="Growth over time"></svg><div class="tip" id="gTip" hidden></div></div>
         <div class="tabs" id="tabs"></div>
-      </div>
-      <div class="card brief" id="briefCard" hidden>
-        <div class="brief-top"><div class="eyebrow">Today's brief · <span id="briefDate"></span></div><a class="rss" href="data/feed.xml" target="_blank" rel="noopener">RSS feed</a></div>
-        <h3 id="briefHead"></h3>
-        <ul id="briefItems"></ul>
-        <details id="briefMore" hidden><summary>Earlier briefs</summary><ul id="briefOld"></ul></details>
-      </div>
+      </section>
+      <section class="panel" id="trendCard">
+        <div class="ph"><span class="t">Best online rate vs Fed funds · 52 wks</span><span class="r" id="trSpread"></span></div>
+        <div class="legend" id="trLegend"></div>
+        <div class="plot"><svg id="trend" role="img" aria-label="Best online savings rate and the Fed funds rate over the past year"></svg><div class="tip" id="trTip" hidden></div></div>
+      </section>
     </div>
 
-    <div class="pair">
-      <div class="card">
-        <div class="eyebrow">Your money vs. the big banks</div>
-        <p class="card-sub" id="bbSub"></p>
-        <div class="hbars" id="bigBars"></div>
-      </div>
-      <div class="card">
-        <div class="eyebrow">Who's held the #1 rate · past year</div>
-        <p class="card-sub" id="ldSub"></p>
-        <div class="hbars" id="leaderBars"></div>
-      </div>
+    <div class="row three">
+      <section class="panel" id="leaderCard">
+        <div class="ph"><span class="t">Weeks at #1 · 52 wks</span><span class="r" id="ldChanges"></span></div>
+        <div id="leaderBars"></div>
+      </section>
+      <section class="panel" id="briefCard">
+        <div class="ph"><span class="t">Daily brief</span><a class="r rss" href="data/feed.xml" target="_blank" rel="noopener">RSS</a></div>
+        <ul class="list" id="briefList"></ul>
+      </section>
+      <section class="panel" id="healthCard">
+        <div class="ph"><span class="t">Data health</span><span class="r" id="healthStatus"></span></div>
+        <ul class="checks" id="healthChecks"></ul>
+        <div id="healthFlags"></div>
+      </section>
     </div>
 
-    <div class="card">
-      <div class="eyebrow">Best online rate vs. the Fed · past year</div>
-      <p class="card-sub" id="trSub"></p>
-      <div class="legend" id="trLegend"></div>
-      <div class="plot"><svg id="trend" viewBox="0 0 1040 240" width="100%" role="img" aria-label="Best online savings rate and the Fed funds rate over the past year"></svg><div class="tip" id="trTip" hidden></div></div>
-    </div>
-
-    <div class="card health" id="healthCard" hidden>
-      <div class="brief-top"><div class="eyebrow">Data health</div><span class="status" id="healthStatus"></span></div>
-      <p class="card-sub" id="healthSub"></p>
-      <ul class="checks" id="healthChecks"></ul>
-      <div class="flags" id="healthFlags"></div>
-    </div>
-    <div class="foot">High-yield savings accounts, FDIC insured. Rates from Bankrate, refreshed daily. Not financial advice.</div>
+    <div class="foot" id="foot">Sources: Bankrate editorial picks, FRED. Refreshed daily. Not financial advice</div>
   </div>
 </section>
 
