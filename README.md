@@ -2,7 +2,7 @@
 
 **Where to put your money**
 
-Tell it how much you have, what you add monthly, and when you need it back. BankPick shows you the bank, CD or Treasury that pays you the most, with rates pulled fresh every day
+BankPick tells you which bank to put your money in. Enter how much you have, what you add monthly, and when you need it back, and it ranks savings accounts, CDs and Treasuries by what you'd end up with. Rates refresh every day
 
 [![Live site](https://img.shields.io/badge/live-danieldistor.github.io-22e07a?style=flat-square)](https://danieldistor.github.io/deposit-pricing-analytics-banking/)
 [![Refresh Data](https://github.com/DanielDistor/deposit-pricing-analytics-banking/actions/workflows/refresh-data.yml/badge.svg)](https://github.com/DanielDistor/deposit-pricing-analytics-banking/actions/workflows/refresh-data.yml)
@@ -13,12 +13,6 @@ Tell it how much you have, what you add monthly, and when you need it back. Bank
 Try it: [$25k + $500 a month](https://danieldistor.github.io/deposit-pricing-analytics-banking/?amount=25000&monthly=500) · [$25k you need in 2 years](https://danieldistor.github.io/deposit-pricing-analytics-banking/?amount=25000&need=24)
 
 ![Dashboard](docs/screenshots/dashboard.png)
-
-## Why
-
-Chase pays 0.01% on savings. The best online banks pay over 4%
-
-On $25k plus $500 a month, that's $27,285 more after 10 years just from picking the right bank. Most people never check, so BankPick does it for them
 
 ## How it works
 
@@ -45,7 +39,7 @@ On $25k plus $500 a month, that's $27,285 more after 10 years just from picking 
 
 Built like a rates sheet: numbers in labeled cells and tables, not paragraphs
 
-- **#1 card:** the pick, its APY (in bps vs Fed funds), what you'll have, interest earned, and how far ahead of Chase it puts you
+- **#1 card:** the pick, its APY, what you'll have, and interest earned
 - **#2–#4 card:** the runner-ups with APY, value and how much less than #1, plus **See all** for the full ranked table
 - **Full table:** every option with product, minimum, liquidity (anytime or locked until a date), value and gap to #1, with Chase, BofA, Wells Fargo and Citi pinned at the bottom for reference
 - **Charts:** growth vs Chase, and the best online rate vs Fed funds over the past year with the spread in bps
