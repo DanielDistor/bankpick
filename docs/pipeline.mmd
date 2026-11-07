@@ -1,0 +1,32 @@
+flowchart LR
+    subgraph Sources
+        FRED[FRED API<br/>Fed funds, Treasuries]
+        BR[Bankrate<br/>savings + CD pages]
+        REV[Bankrate reviews<br/>Chase, BofA, Wells, Citi]
+    end
+    subgraph Extract["Extract + load (Python)"]
+        XF[extract_fred.py]
+        XB[extract_bankrate.py]
+        XR[extract_big_banks.py]
+        KB[(knowledge/raw<br/>snapshots + CSV log)]
+        PS[parse_savings_offers.py<br/>parse_cd_offers.py<br/>parse_bankrate.py]
+    end
+    subgraph Warehouse["DuckDB + dbt"]
+        RAW[(raw.*)]
+        STG[staging models]
+        MART[marts + star schema]
+        TESTS{{dbt tests}}
+    end
+    subgraph Publish
+        EXP[export_site_data.py<br/>health checks, anomaly flags,<br/>daily brief]
+        JSON[site/data/rates.json<br/>feed.xml]
+        SITE[GitHub Pages<br/>static site]
+    end
+    FRED --> XF --> RAW
+    BR --> XB --> KB
+    REV --> XR --> KB
+    KB --> PS --> RAW
+    RAW --> STG --> MART
+    STG --> TESTS
+    MART --> EXP --> JSON --> SITE
+    STG --> EXP

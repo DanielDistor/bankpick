@@ -1,84 +1,87 @@
-# Deposit Pricing Analytics
+# Where to Grow It
 
-> Tracking how major U.S. banks respond to Federal Reserve rate changes and identifying where client deposits earn the most.
+**Type how much you want to invest. See exactly where it grows the most, with rates refreshed every day.**
 
-**Live site:** [danieldistor.github.io/deposit-pricing-analytics-banking](https://danieldistor.github.io/deposit-pricing-analytics-banking/)
+[![Live site](https://img.shields.io/badge/live-danieldistor.github.io-22e07a?style=flat-square)](https://danieldistor.github.io/deposit-pricing-analytics-banking/)
+[![Refresh Data](https://github.com/DanielDistor/deposit-pricing-analytics-banking/actions/workflows/refresh-data.yml/badge.svg)](https://github.com/DanielDistor/deposit-pricing-analytics-banking/actions/workflows/refresh-data.yml)
+[![Deploy Site](https://github.com/DanielDistor/deposit-pricing-analytics-banking/actions/workflows/deploy-site.yml/badge.svg)](https://github.com/DanielDistor/deposit-pricing-analytics-banking/actions/workflows/deploy-site.yml)
 
-Type how much you're looking to invest (and, optionally, how much you'll add each month). The site shows which high-yield savings account grows it the most, what it becomes in 1, 5, 10, or 20 years, and what the same money would do at Chase. Rates come from a data pipeline that refreshes every day.
+**Live:** https://danieldistor.github.io/deposit-pricing-analytics-banking/
+· Example result: [$25,000 + $500/month](https://danieldistor.github.io/deposit-pricing-analytics-banking/?amount=25000&monthly=500)
+· [$25,000 needed in 2 years](https://danieldistor.github.io/deposit-pricing-analytics-banking/?amount=25000&need=24)
 
----
+![Dashboard](docs/screenshots/dashboard.png)
 
-## Business Question
+Big banks pay almost nothing on savings (Chase: 0.01%) while the best online banks pay over 4%. This site turns that gap into one answer for one person: how much you have, how much you'll add each month, and when you'll need it. It compares high-yield savings accounts, CDs and Treasuries and tells you where the money ends up highest, and by how much compared with leaving it at Chase.
 
-Where should a client deposit their money right now to get the most growth out of it?
-
-This project tracks how major U.S. banks responded to Federal Reserve rate changes and builds the case for where client deposits should go. The Fed funds rate directly affects the APY banks offer on savings accounts. The APY is what determines how much a deposit grows over any given number of years. Bank choice is the only variable a client controls.
-
----
-
-## Tech Stack
-
-| Layer | Tool |
-|-------|------|
-| IDE | Cursor + Claude Code |
-| Data Warehouse | DuckDB (free, file-based) |
-| Transformation | dbt (`dbt-duckdb`) |
-| Orchestration | GitHub Actions (daily refresh + Pages deploy) |
-| Front end | Static HTML/CSS/JavaScript on GitHub Pages (no framework, no build step) |
-| Knowledge Base | Claude Code |
-| Version Control | Git + GitHub |
-
-The whole stack runs on free tiers with no expiring trials or paid APIs, so the live site stays up indefinitely and never sleeps.
+Behind it is a daily data pipeline (FRED + Bankrate → DuckDB → dbt → static site) that checks its own data before publishing. It runs entirely on free tiers.
 
 ---
 
-## Data Sources
+## How it works
 
-| Source | Type | Destination |
-|--------|------|-------------|
-| [FRED API](https://fred.stlouisfed.org/) | REST API (free key; keyless CSV fallback) | `raw.fred_observations` |
-| [Bankrate](https://www.bankrate.com/) | Web scrape (`requests` + `html2text`) | `knowledge/raw/` → `raw.bankrate_rates`, `raw.bankrate_savings_offers`, `raw.bankrate_rate_history` |
+| 1. Ask | 2. Load | 3. Answer |
+|---|---|---|
+| ![Ask](docs/screenshots/ask.png) | ![Loading](docs/screenshots/loading.png) | ![Timeline answer](docs/screenshots/timeline.png) |
+| How much, optional monthly contributions, and **when you'll need it** (anytime, 1, 2, 3 or 5 years). | Checks the Fed rate, scans the day's bank rates, and grows the money. | The best option, the trade-off in plain words, and every alternative ranked by what it ends at. |
 
-FRED series loaded: Fed Funds Rate (monthly + daily), 3-Month/1-Year/2-Year/5-Year/10-Year Treasury yields, Discount Window Rate.
+- **Anytime** → the best high-yield savings account (promo-aware, minimums respected).
+- **A fixed timeline** → savings vs. every CD of exactly that term vs. the matching Treasury, ranked by final balance. A locked rate's trade-off is spelled out: "locked until Nov 2028, penalty to withdraw early".
+- **Monthly contributions** can't go into a CD or Treasury, so they're projected into the top savings account alongside it, and the site says so.
+- Everything is editable in place on the dashboard, and every result has a shareable URL (`?amount=25000&monthly=500&need=24`).
 
----
+### What's on the dashboard
 
-## Pipeline Diagram
+| Your money vs. the big banks | Best online rate vs. the Fed |
+|---|---|
+| ![Big banks](docs/screenshots/big-banks.png) | ![Rate vs Fed](docs/screenshots/rate-vs-fed.png) |
 
-> Mermaid renders natively on GitHub. The PNG below is a static backup for environments that do not support Mermaid rendering.
+- The answer, with an **Open account** link, track-record badge ("Top 3 for 5 weeks") and first-year earnings
+- Stat tiles: balance at the horizon, gain over Chase, first month's interest, Fed funds rate
+- **Today's brief**: what changed since yesterday ("EverBank takes #1 at 4.35%…"), also published as an [RSS feed](https://danieldistor.github.io/deposit-pricing-analytics-banking/data/feed.xml)
+- Growth chart against Chase with hover readouts, and what the same money becomes at Chase, Bank of America, Wells Fargo and Citi
+- The best online savings rate against the Fed funds rate over the past year, and who has held the #1 rate
+- All other options with what each ends at, an FDIC split over $250,000, and the pipeline's **data health** panel
 
-```mermaid
-flowchart LR
-    FRED[FRED API\nFederal Reserve] -->|extract_fred.py\nGitHub Actions| RAW_FRED[(raw.fred_observations\nDuckDB)]
-    BANKRATE[Bankrate\nWeb Scrape] -->|extract_bankrate.py\nGitHub Actions| KB[knowledge/raw/\nMarkdown Files]
-    KB -->|parse_bankrate.py| RAW_BANK[(raw.bankrate_rates\nDuckDB)]
-    RAW_FRED --> STG_FRED[stg_fred_observations\ndbt Staging]
-    RAW_BANK --> STG_BANK[stg_bankrate_rates\ndbt Staging]
-    STG_FRED --> FACT[fact_deposit_rates\ndbt Mart]
-    STG_BANK --> FACT
-    STG_BANK --> DIM_BANK[dim_bank]
-    STG_BANK --> DIM_PROD[dim_product]
-    STG_FRED --> DIM_DATE[dim_date]
-    DIM_BANK --> FACT
-    DIM_PROD --> FACT
-    DIM_DATE --> FACT
-    KB -->|parse_savings_offers.py| RAW_OFFERS[(raw.bankrate_savings_offers\nraw.bankrate_rate_history)]
-    RAW_OFFERS --> OFFERS[fct_savings_offers\nfct_savings_rate_history\ndbt Mart]
-    OFFERS -->|export_site_data.py| JSON[site/data/rates.json\ncommitted daily]
-    STG_FRED --> JSON
-    JSON --> SITE[GitHub Pages\nstatic site]
-```
-
-![Pipeline Diagram](docs/pipeline_diagram.png)
+<p align="center"><img src="docs/screenshots/mobile-ask.png" width="260" alt="Phone: ask"> &nbsp; <img src="docs/screenshots/mobile-dashboard.png" width="260" alt="Phone: dashboard"></p>
 
 ---
 
-## ERD
+## Data quality
 
-> Mermaid renders natively on GitHub. The PNG below is a static backup for environments that do not support Mermaid rendering.
+The pipeline checks its own output before every publish and shows the result on the site:
+
+![Data health](docs/screenshots/data-health.png)
+
+- **Freshness:** Bankrate rates, FRED data and big-bank rates are each checked against a maximum age.
+- **Sanity:** bank count, APYs within 0–10%, no duplicate banks, and the dbt test results from the same run.
+- **Anomaly flags:** a rate that jumps or drops ≥ 0.5 points for one week and then reverts is flagged as a likely data error. It's shown on the chart but left out of rankings and badges. The first one caught was in Bankrate's own data: Accordia Bank at 5.00% for the week of 8/18/2026, between two weeks at 4.00%.
+
+Only Bankrate's **editorial picks** are recommended. Sponsored listings are read only to find promo terms for those same banks.
+
+---
+
+## Architecture
+
+![Pipeline](docs/pipeline_diagram.png)
+
+| Step | What runs | Output |
+|---|---|---|
+| Extract | `extract_fred.py` (FRED API), `extract_bankrate.py` (savings + CD pages), `extract_big_banks.py` (Chase, BofA, Wells Fargo, Citi review pages) | `raw.fred_observations`, page snapshots in `knowledge/raw/` (saved only when rates change), a big-bank rate log |
+| Parse + load | `parse_savings_offers.py`, `parse_cd_offers.py`, `parse_bankrate.py` | `raw.bankrate_savings_offers`, `raw.bankrate_rate_history`, `raw.bankrate_cd_offers`, `raw.big_bank_savings_rates` |
+| Transform + test | dbt (`dbt-duckdb`): staging → marts, star schema (`fact_deposit_rates` + `dim_bank`, `dim_product`, `dim_date`) | 58 models, seeds and tests |
+| Publish | `export_site_data.py`: rankings inputs, badges, weekly #1 history, health checks, anomaly flags, daily brief | `site/data/rates.json`, `brief.json`, `feed.xml` |
+| Serve | GitHub Pages | Static HTML/CSS/JS, no framework, no build step |
+
+**Automation:** `.github/workflows/refresh-data.yml` runs the whole pipeline daily at 12:00 UTC (tests first), then commits the data. `.github/workflows/deploy-site.yml` publishes `site/` on every push and after every refresh.
+
+### Data model
 
 ```mermaid
 erDiagram
+    FACT_DEPOSIT_RATES }o--|| DIM_BANK : bank_key
+    FACT_DEPOSIT_RATES }o--|| DIM_PRODUCT : product_key
+    FACT_DEPOSIT_RATES }o--|| DIM_DATE : scrape_date
     FACT_DEPOSIT_RATES {
         int bank_key FK
         int product_key FK
@@ -87,7 +90,6 @@ erDiagram
         float fed_funds_rate
         float spread_pct
         float passthrough_pct
-        string source_name
     }
     DIM_BANK {
         int bank_key PK
@@ -98,88 +100,83 @@ erDiagram
         int product_key PK
         string product_name
         int term_months
-        string product_display_name
     }
     DIM_DATE {
         date date_day PK
         int year
-        int month
         int quarter
         string fed_rate_cycle
     }
-
-    FACT_DEPOSIT_RATES }o--|| DIM_BANK : "bank_key"
-    FACT_DEPOSIT_RATES }o--|| DIM_PRODUCT : "product_key"
-    FACT_DEPOSIT_RATES }o--|| DIM_DATE : "scrape_date"
 ```
 
-![ERD](docs/erd.png)
+The recommender reads the purpose-built marts `fct_savings_offers` and `fct_savings_rate_history`, and the staging models `stg_cd_offers`, `stg_big_bank_savings` and `stg_fred_observations`.
 
 ---
 
-## Key Insights
+## Tech stack
 
-_Figures as of the November 5, 2026 refresh (Fed funds rate 3.88%); the live site updates daily._
+| Layer | Tool |
+|---|---|
+| Sources | FRED API, Bankrate (`requests` + `html2text`) |
+| Warehouse | DuckDB (file-based) |
+| Transformation + tests | dbt (`dbt-duckdb`), pytest, `node --test` |
+| Orchestration | GitHub Actions |
+| Front end | Vanilla JS (ES modules), hand-drawn SVG charts, GitHub Pages |
+| Built with | Cursor + Claude Code |
 
-- **Pass-through rate explains the APY gap:** The Fed funds rate sets the benchmark, and banks decide how much of it to share. Top online banks pay 3.90% to 4.27% on savings, at or above the Fed rate. JPMorgan Chase, Bank of America, and Wells Fargo pay 0.01%, keeping nearly the entire rate as margin.
-- **The dollar impact is immediate:** $10,000 at Peak Bank (4.27%) earns about $427 in a year. The same deposit at JPMorgan Chase earns $1.
-- **Headline rates can mislead:** CIT Bank advertises 4.35%, but that is a 6-month promo on a 3.75% base. Over 10 years the promo adds only about $104 on $25,000, so the site projects promo-then-base and ranks banks by what they actually pay over the chosen horizon.
-- **Minimums matter:** some top rates only apply above a balance (CIT needs $5,000, Happen Bank $250). The site skips banks whose minimum is above the amount entered.
-- **Bank choice is the only variable a client controls:** the Fed rate moves on its own and each bank's pricing policy is fixed. The decision a client can make is which bank holds the deposit.
-
----
-
-## How the site works
-
-1. **Ask:** "How much are you looking to invest?", an optional monthly contribution, and "When will you need this money?" (anytime, 1, 2, 3 or 5 years). Anytime compares high-yield savings; a fixed timeline also compares CDs of exactly that term (Bankrate) and the matching Treasury (FRED constant-maturity yield, converted to APY), and recommends whichever ends with the most money. Monthly contributions can't go into a CD or Treasury, so they're projected into the top savings account alongside it.
-2. **Loading:** checks the Fed rate, scans the latest bank rates, and grows the money (an animation over the day's data; nothing is scraped live).
-3. **Dashboard:** the best account for that amount, stat tiles, its growth chart against Chase, what the money becomes at each big bank, the best online rate vs. the Fed funds rate over the past year, who has held the #1 rate, the next four options, a 1-year Treasury line when a Treasury pays more, and an FDIC split over $250,000. Amounts are editable in place, and the URL (e.g. `?amount=25000&monthly=500`) is shareable.
-4. **Daily brief:** each refresh compares today's data with yesterday's and writes what changed ("EverBank takes #1 at 4.35%…", rate cuts, promos, Fed moves). The last 30 days are kept and published as an RSS feed (`site/data/feed.xml`).
-5. **Data health:** before publishing, the pipeline checks its own output (freshness of Bankrate, FRED and big-bank rates, bank count, APY range, duplicates, dbt test results) and flags one-week spikes that revert, such as Accordia Bank's 5.00% on 8/18/2026. Flagged points are shown on the site but left out of rankings and badges.
-
-Only Bankrate's editorial picks are recommended. Sponsored listings are used only to read promo terms for those same banks. Track-record badges ("Top 3 for 5 weeks", "Rate cut 0.10%") come from each bank's weekly rate history.
+Everything runs on free tiers with no expiring trials or paid APIs. The only credential is a free FRED API key, kept in `.env` locally and as a GitHub Actions secret.
 
 ---
 
-## Pipeline Setup (Local)
+## Run it locally
 
 ```bash
-# Clone and install
 git clone https://github.com/DanielDistor/deposit-pricing-analytics-banking.git
 cd deposit-pricing-analytics-banking
 pip install -r requirements.txt
-
-# Optional: FRED_API_KEY in .env (free). Without it, FRED's keyless CSV endpoint is used.
-# No other credentials are needed. The warehouse is a local DuckDB file in data/.
+echo "FRED_API_KEY=your_free_key" > .env   # optional; FRED's keyless CSV endpoint is the fallback
 
 # Extract + load
 python pipelines/extract_fred.py
 python pipelines/extract_bankrate.py
+python pipelines/extract_big_banks.py && python pipelines/extract_big_banks.py --load
 python pipelines/parse_bankrate.py
 python pipelines/parse_savings_offers.py
+python pipelines/parse_cd_offers.py
 
 # Transform + test
 (cd dbt && dbt build --profiles-dir .)
-python -m pytest -q pipelines/tests
-node --test 'site/tests/*.test.mjs'
 
-# Export the site's data file, then view the site
+# Publish the site's data, then open http://localhost:8000
 python pipelines/export_site_data.py
-python -m http.server -d site 8000   # open http://localhost:8000
+python -m http.server -d site 8000
 ```
 
-In production, `.github/workflows/refresh-data.yml` runs these same steps every day at 12:00 UTC and commits `site/data/rates.json` (plus a new Bankrate snapshot only when rates changed). `.github/workflows/deploy-site.yml` then publishes `site/` to GitHub Pages.
+The site alone needs no setup: `python -m http.server -d site 8000` serves it with the committed data.
+
+### Tests
+
+```bash
+python -m pytest -q pipelines/tests      # parsers, health checks, anomaly flags, daily brief, export (58)
+node --test 'site/tests/*.test.mjs'      # money math: projections, promos, minimums, CDs/Treasuries, FDIC split (23)
+(cd dbt && dbt build --profiles-dir .)   # models + data tests (58)
+```
 
 ---
 
-## Knowledge Base
+## Repository layout
 
-Scraped sources and synthesized wiki pages are in `knowledge/`. Raw sources cover savings rate data from Bankrate, NerdWallet, and individual bank pages. Wiki pages synthesize trends across the Fed rate cycle, key entities, and bank behavior.
-
-See [`knowledge/index.md`](knowledge/index.md) for all sources and wiki pages.
+```
+.github/workflows/   refresh-data.yml (daily pipeline), deploy-site.yml (GitHub Pages)
+pipelines/           extract, parse, export, health checks, daily brief (+ tests/)
+dbt/                 staging + mart models, seeds, tests
+site/                index.html, css/, js/app.js (UI), js/calc.js (money math), data/ (published JSON + RSS)
+knowledge/           raw/ scraped snapshots, wiki/ synthesized notes, index.md
+docs/                screenshots, pipeline diagram, ERD, proposal
+```
 
 ---
 
-## Project Context
+## Project context
 
-Built for LMU ISBA-4715 (Analytics Engineering), targeting the **JPMorgan Chase Wealth Management Deposit Pricing Analytics Associate** role. The project demonstrates SQL, dimensional modeling, data pipelines, and analytics skills directly required by the posting.
+Built for LMU ISBA-4715 (Analytics Engineering). The original question was how banks pass Federal Reserve rate changes through to deposit rates. The product turns that analysis into a decision a person can act on: where to put their money. Rates are informational, not financial advice.
