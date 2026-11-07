@@ -241,3 +241,5 @@ a{color:inherit}
   .list.next .row .e{grid-column:3;grid-row:2}
 }
 .list.next .row .n .open{display:inline-block;margin:4px 0 0}
+.answer h2{margin-top:0;font-size:42px;max-width:920px}
+@media (max-width:560px){.answer h2{font-size:30px}.answer .why{font-size:18px}}

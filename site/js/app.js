@@ -1,5 +1,5 @@
 import {
-  project, projectBank, rankBanks, fdicSplit, treasuryEdge, parseShareParams, buildShareQuery, rateLabel, leaderStats, planOptions,
+  project, projectBank, rankBanks, fdicSplit, parseShareParams, buildShareQuery, leaderStats, planOptions,
   FDIC_LIMIT, MAX_AMOUNT, MAX_MONTHLY,
 } from "./calc.js";
 
@@ -176,82 +176,53 @@ const toOpen = (b) => {
   if (b.min_monthly_deposit > 0) parts.push(`needs ${money(b.min_monthly_deposit)}/mo deposits`);
   return parts.join(" · ");
 };
-const openLink = (b) => b.url
-  ? `<a class="open" href="${esc(b.url)}" target="_blank" rel="noopener">Open account →</a>` : "";
-const badge = (b) => (b.badge ? `<span class="badge">${esc(b.badge)}</span>` : "");
-
-function firstYearEarned(b) {
-  const { amount: principal, monthly } = state;
-  return projectBank(b, { principal, monthly, years: 1 }).at(-1) - principal - monthly * 12;
-}
 
 // ---------- plain-English answer ----------
 const yrsText = (y) => `${y} year${y === 1 ? "" : "s"}`;
-const whoseMoney = () => `Your <b>${money(state.amount)}</b>` + (state.monthly > 0 ? ` plus <b>${money(state.monthly)} a month</b>` : "");
 const ratePhrase = (b) => b.promo
   ? `${b.promo.apy.toFixed(2)}% for ${b.promo.months} month${b.promo.months === 1 ? "" : "s"}, then ${b.apy.toFixed(2)}% a year`
   : `${b.apy.toFixed(2)}% a year`;
 
 // ---------- options for a fixed timeline ----------
-const NEED_LABEL = { 0: "anytime", 12: "in 1 year", 24: "in 2 years", 36: "in 3 years", 60: "in 5 years" };
 const optName = (o) => (o.kind === "cd" ? `${o.name} CD` : o.name);
 const lockedUntil = (months) => {
   const dt = new Date(); dt.setMonth(dt.getMonth() + months);
   return dt.toLocaleDateString("en-US", { month: "short", year: "numeric" });
 };
-const optTrade = (o) => ({
-  savings: "Rate can change anytime · withdraw anytime",
-  cd: `Fixed rate · locked until ${lockedUntil(o.term_months)} · penalty to withdraw early`
-    + (o.min_deposit ? ` · ${money(o.min_deposit)} minimum` : ""),
-  treasury: "Fixed rate · backed by the U.S. government · no state income tax · can sell early at market price",
-})[o.kind];
-const optLink = (o) => {
-  if (!o.url) return "";
-  const label = o.kind === "treasury" ? "Buy at TreasuryDirect →" : o.kind === "cd" ? "See details →" : "Open account →";
-  return `<a class="open" href="${esc(o.url)}" target="_blank" rel="noopener">${label}</a>`;
-};
 
-function answerForPlan(top, plan) {
-  const yrs = top.term_months ? top.term_months / 12 : state.need / 12;
-  const term = `${yrs}-year`;
+function answerForPlan(top) {
+  const yrs = state.need / 12;
+  const lump = `Your ${money(state.amount)} should go in`;
+  const withMonthly = top.monthlyTo ? ` with your ${money(state.monthly)} a month in ${esc(top.monthlyTo)} savings` : "";
+  const have = `you'll have <b>${money(top.final)}</b> in ${yrsText(yrs)}`;
   if (top.kind === "cd") {
-    $("ansH").innerHTML = `Lock it in a <em>${term} CD</em> at ${esc(top.name)}`;
-  } else if (top.kind === "treasury") {
-    $("ansH").innerHTML = `Buy a <em>${term} Treasury</em>`;
-  } else {
-    $("ansH").innerHTML = `Put it in <em>${esc(top.name)}</em>`;
-  }
-  const lump = `Your <b>${money(state.amount)}</b>`;
-  const ending = top.monthlyTo
-    ? `With your ${money(state.monthly)} a month going in ${esc(top.monthlyTo)} savings next to it, you'll have <b>${money(top.final)}</b> in ${yrsText(yrs)}`
-    : `You'll have <b>${money(top.final)}</b> in ${yrsText(yrs)}`;
-  if (top.kind === "cd") {
-    $("ansWhy").innerHTML = `${lump} should go in a ${term} CD at ${esc(top.name)}. It's locked in at ${top.apy.toFixed(2)}% a year. ${ending}`;
+    $("ansH").innerHTML = `${lump} a <em>${yrs}-year CD</em> at ${esc(top.name)}`;
+    $("ansWhy").innerHTML = `It's locked in at ${top.apy.toFixed(2)}% a year, so ${have}${withMonthly}`;
     $("ansMeta").textContent = [top.min_deposit ? `${money(top.min_deposit)} minimum` : "No minimum",
-      /credit union/i.test(top.name) ? "NCUA insured" : "FDIC insured", `locked until ${lockedUntil(top.term_months)}, penalty if you pull it out early`].join(" · ");
+      /credit union/i.test(top.name) ? "NCUA insured" : "FDIC insured", `locked until ${lockedUntil(top.term_months)}`].join(" · ");
   } else if (top.kind === "treasury") {
-    $("ansWhy").innerHTML = `${lump} should go in a ${term} Treasury. It pays about ${top.apy.toFixed(2)}% a year, locked in. ${ending}`;
-    $("ansMeta").textContent = "Backed by the U.S. government · no state income tax · you can sell early at market price";
+    $("ansH").innerHTML = `${lump} a <em>${yrs}-year Treasury</em>`;
+    $("ansWhy").innerHTML = `It pays about ${top.apy.toFixed(2)}% a year, locked in, so ${have}${withMonthly}`;
+    $("ansMeta").textContent = `Backed by the U.S. government · locked until ${lockedUntil(top.term_months)}`;
   } else {
-    $("ansWhy").innerHTML = `${whoseMoney()} should go in ${esc(top.name)}. It pays ${ratePhrase(top.bank)}, so you'll have <b>${money(top.final)}</b> in ${yrsText(yrs)}`;
-    $("ansMeta").textContent = `${toOpen(top.bank)} · FDIC insured · the rate can change anytime`;
+    answerForSavings(top.bank, top.final, yrs);
   }
-  $("ansCta").innerHTML = (top.kind === "savings" ? badge(top.bank) : "") + optLink(top);
   $("fallback").hidden = true;
-
-  // why not savings: the trade-off in one line
-  const bestSavings = plan.options.find((o) => o.kind === "savings");
-  const tr = $("treasury");
-  tr.hidden = top.kind === "savings" || !bestSavings;
-  if (!tr.hidden) tr.innerHTML = `That's <b>${money(top.final - bestSavings.final)}</b> more than ${esc(bestSavings.name)} savings, and savings rates can drop while this one can't`;
 }
 
-function nextRow(rank, name, kind, detail, link, apy, final, topFinal) {
+function answerForSavings(bank, final, yrs) {
+  const adds = state.monthly > 0 ? ` with ${money(state.monthly)} a month` : "";
+  $("ansH").innerHTML = `Your ${money(state.amount)} should go in <em>${esc(bank.name)}</em>`;
+  $("ansWhy").innerHTML = `It pays ${ratePhrase(bank)}, so${adds} you'll have <b>${money(final)}</b> in ${yrsText(yrs)}`;
+  $("ansMeta").textContent = `${toOpen(bank)} · FDIC insured`;
+}
+
+function nextRow(rank, name, kind, apy, final, topFinal) {
   const gap = Math.round(topFinal - final);
   return `
     <div class="row">
       <div class="rk mono">#${rank}</div>
-      <div class="n">${esc(name)}${kind ? `<span class="kind">${kind}</span>` : ""}<small>${esc(detail)}</small>${link}</div>
+      <div class="n">${esc(name)}${kind ? `<span class="kind">${kind}</span>` : ""}</div>
       <div class="a mono">${apy.toFixed(2)}%</div>
       <div class="e mono">${money(final)}<small>${gap > 0 ? `${money(gap)} less` : "same"}</small></div>
     </div>`;
@@ -269,8 +240,8 @@ function render() {
     top = plan.top;
     topSeries = top.series;
     display = { name: optName(top), apy: top.apy };
-    answerForPlan(top, plan);
-    listRows = plan.options.slice(1, 4).map((o, i) => nextRow(i + 2, optName(o), o.kind === "savings" ? "Savings" : null, optTrade(o), optLink(o), o.apy, o.final, top.final));
+    answerForPlan(top);
+    listRows = plan.options.slice(1, 4).map((o, i) => nextRow(i + 2, optName(o), o.kind === "savings" ? "Savings" : null, o.apy, o.final, top.final));
     fdicPool = top.kind === "treasury" ? null : plan.options.filter((o) => o.kind === top.kind);
   } else {
     const { ranked, fallback, neededFor } = rankBanks(d.banks, { principal: amount, monthly, years });
@@ -278,20 +249,13 @@ function render() {
     top = bank;
     topSeries = projectBank(bank, { principal: amount, monthly, years });
     display = { name: bank.name, apy: bank.apy };
-    $("ansH").innerHTML = `Put it in <em>${esc(bank.name)}</em>`;
-    $("ansWhy").innerHTML = `${whoseMoney()} should go in ${esc(bank.name)}. It pays ${ratePhrase(bank)}, so you'll have <b>${money(topSeries.at(-1))}</b> in ${yrsText(years)}`;
-    $("ansMeta").textContent = `${toOpen(bank)} · FDIC insured · ${money(firstYearEarned(bank))} in interest the first year`;
-    $("ansCta").innerHTML = badge(bank) + openLink(bank);
+    answerForSavings(bank, topSeries.at(-1), years);
     const fb = $("fallback");
     fb.hidden = !(fallback && neededFor);
     if (!fb.hidden) fb.innerHTML = `Most top rates need <b>${money(neededFor)}+</b> to earn their full rate`;
-    const edge = d.treasury_1y ? treasuryEdge(bank, d.treasury_1y.rate, amount) : null;
-    const tr = $("treasury");
-    tr.hidden = !edge;
-    if (edge) tr.innerHTML = `Won't touch it for a year? A 1-year Treasury pays <b>${edge.rate.toFixed(2)}%</b>, about <b>${money(edge.extra)}</b> more`;
     listRows = ranked.slice(1, 4).map((b, i) => {
       const fin = projectBank(b, { principal: amount, monthly, years }).at(-1);
-      return nextRow(i + 2, b.name, null, `${rateLabel(b)} · ${toOpen(b)}`, openLink(b), b.apy, fin, topSeries.at(-1));
+      return nextRow(i + 2, b.name, null, b.apy, fin, topSeries.at(-1));
     });
     fdicPool = ranked;
   }
