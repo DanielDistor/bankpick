@@ -63,7 +63,7 @@ def update_log(log: list[dict], entry: dict, keep: int = 30) -> list[dict]:
 def render_rss(log: list[dict], site_url: str) -> str:
     rss = ET.Element("rss", version="2.0")
     ch = ET.SubElement(rss, "channel")
-    ET.SubElement(ch, "title").text = "Where to Grow It · Daily savings rate brief"
+    ET.SubElement(ch, "title").text = "Where to Put Your Money · Daily savings rate brief"
     ET.SubElement(ch, "link").text = site_url
     ET.SubElement(ch, "description").text = "What changed in high-yield savings rates today, from Bankrate and FRED."
     for e in log:
