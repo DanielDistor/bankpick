@@ -69,6 +69,9 @@ jobs:
       - name: Parse savings offers + rate history -> DuckDB
         run: python pipelines/parse_savings_offers.py
 
+      - name: Parse CD offers -> DuckDB
+        run: python pipelines/parse_cd_offers.py
+
       - name: dbt build (models + tests)
         working-directory: dbt
         run: dbt build --profiles-dir .

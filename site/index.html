@@ -25,6 +25,16 @@
       <button type="button" class="seg-btn" data-monthly="yes" role="radio" aria-checked="false">Add monthly</button>
     </div>
     <label class="monthly-input" id="monthlyWrap" hidden><span>$</span><input id="askMonthly" class="mono" value="500" inputmode="numeric" autocomplete="off" aria-label="Monthly contribution"><em>/ month</em></label>
+    <div class="need">
+      <div class="need-q">When will you need this money?</div>
+      <div class="seg need-seg" role="radiogroup" aria-label="When will you need this money?">
+        <button type="button" class="need-btn on" data-need="0" role="radio" aria-checked="true">Anytime</button>
+        <button type="button" class="need-btn" data-need="12" role="radio" aria-checked="false">1 yr</button>
+        <button type="button" class="need-btn" data-need="24" role="radio" aria-checked="false">2 yrs</button>
+        <button type="button" class="need-btn" data-need="36" role="radio" aria-checked="false">3 yrs</button>
+        <button type="button" class="need-btn" data-need="60" role="radio" aria-checked="false">5 yrs</button>
+      </div>
+    </div>
     <div><button class="go" type="submit">Show me →</button></div>
   </form>
   <div class="ticker" aria-hidden="true">
@@ -59,6 +69,9 @@
       <div class="pills">
         <label class="amt"><span>$</span><input id="dashInput" class="mono" inputmode="numeric" autocomplete="off" aria-label="Amount to invest"></label>
         <label class="amt"><span>+$</span><input id="dashMonthly" class="mono small" inputmode="numeric" autocomplete="off" aria-label="Monthly contribution"><em>/mo</em></label>
+        <label class="amt need-pill"><span>Need it</span><select id="dashNeed" aria-label="When will you need this money?">
+          <option value="0">anytime</option><option value="12">in 1 yr</option><option value="24">in 2 yrs</option><option value="36">in 3 yrs</option><option value="60">in 5 yrs</option>
+        </select></label>
       </div>
       <div class="asof" id="asOf"></div>
     </div>
@@ -111,7 +124,7 @@
     </div>
 
     <div class="list">
-      <div class="eyebrow">Other great options · first year</div>
+      <div class="eyebrow" id="listHead">Other great options · first year</div>
       <div id="rows"></div>
     </div>
 

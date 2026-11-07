@@ -131,7 +131,7 @@ _Figures as of the November 5, 2026 refresh (Fed funds rate 3.88%); the live sit
 
 ## How the site works
 
-1. **Ask:** "How much are you looking to invest?" plus an optional monthly contribution.
+1. **Ask:** "How much are you looking to invest?", an optional monthly contribution, and "When will you need this money?" (anytime, 1, 2, 3 or 5 years). Anytime compares high-yield savings; a fixed timeline also compares CDs of exactly that term (Bankrate) and the matching Treasury (FRED constant-maturity yield, converted to APY), and recommends whichever ends with the most money. Monthly contributions can't go into a CD or Treasury, so they're projected into the top savings account alongside it.
 2. **Loading:** checks the Fed rate, scans the latest bank rates, and grows the money, then a showdown crosses out Chase, Bank of America, Wells Fargo and Citi and the next four banks before checking the winner (an animation over the day's data; nothing is scraped live).
 3. **Dashboard:** the best account for that amount, stat tiles, its growth chart against Chase, what the money becomes at each big bank, the best online rate vs. the Fed funds rate over the past year, who has held the #1 rate, the next four options, a 1-year Treasury line when a Treasury pays more, and an FDIC split over $250,000. Amounts are editable in place, and the URL (e.g. `?amount=25000&monthly=500`) is shareable.
 4. **Daily brief:** each refresh compares today's data with yesterday's and writes what changed ("EverBank takes #1 at 4.35%…", rate cuts, promos, Fed moves). The last 30 days are kept and published as an RSS feed (`site/data/feed.xml`).

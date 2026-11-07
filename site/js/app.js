@@ -1,5 +1,5 @@
 import {
-  project, projectBank, rankBanks, fdicSplit, treasuryEdge, parseShareParams, buildShareQuery, rateLabel, showdown, leaderStats,
+  project, projectBank, rankBanks, fdicSplit, treasuryEdge, parseShareParams, buildShareQuery, rateLabel, showdown, leaderStats, planOptions,
   FDIC_LIMIT, MAX_AMOUNT, MAX_MONTHLY,
 } from "./calc.js";
 
@@ -7,7 +7,7 @@ const $ = (id) => document.getElementById(id);
 const HORIZONS = [1, 5, 10, 20];
 const COMPARISON = "JPMorgan Chase";
 
-const state = { amount: 25000, monthly: 0, years: 10, data: null };
+const state = { amount: 25000, monthly: 0, need: 0, years: 10, data: null };
 
 const money = (n) => "$" + Math.round(n).toLocaleString("en-US");
 const digits = (s) => s.replace(/[^0-9]/g, "");
@@ -53,11 +53,19 @@ document.querySelectorAll(".seg-btn").forEach((btn) => btn.addEventListener("cli
   $("monthlyWrap").hidden = !yes;
   if (yes) askMonthly.focus();
 }));
+document.querySelectorAll(".need-btn").forEach((btn) => btn.addEventListener("click", () => {
+  document.querySelectorAll(".need-btn").forEach((b) => {
+    const on = b === btn;
+    b.classList.toggle("on", on);
+    b.setAttribute("aria-checked", String(on));
+  });
+}));
 $("askForm").addEventListener("submit", (e) => { e.preventDefault(); start(); });
 
 async function start() {
   state.amount = Math.max(1, num(askInput) || 25000);
   state.monthly = $("monthlyWrap").hidden ? 0 : num(askMonthly);
+  state.need = Number(document.querySelector(".need-btn.on")?.dataset.need || 0);
   const d = await dataReady;
   if (!d) return;
   history.replaceState(null, "", buildShareQuery(state));
@@ -93,15 +101,19 @@ async function playLoading(d) {
   $("r2").textContent = `${names.length} banks`;
 
   steps[2].classList.add("active");
-  const top = rankBanks(d.banks, { principal: state.amount, monthly: state.monthly, years: 10 }).ranked[0];
-  const target = projectBank(top, { principal: state.amount, monthly: state.monthly, years: 10 }).at(-1);
+  const yrs = state.need ? state.need / 12 : 10;
+  const target = state.need
+    ? planOptions(d, { principal: state.amount, monthly: state.monthly, months: state.need }).top.final
+    : projectBank(rankBanks(d.banks, { principal: state.amount, monthly: state.monthly, years: 10 }).ranked[0],
+      { principal: state.amount, monthly: state.monthly, years: 10 }).at(-1);
+  const inYrs = ` in ${yrs} year${yrs > 1 ? "s" : ""}`;
   const t1 = performance.now();
   while (performance.now() - t1 < 700) {
     const k = (performance.now() - t1) / 700;
-    $("s3").textContent = money(state.amount + (target - state.amount) * k) + " in 10 years";
+    $("s3").textContent = money(state.amount + (target - state.amount) * k) + inYrs;
     await wait(30);
   }
-  $("s3").textContent = money(target) + " in 10 years";
+  $("s3").textContent = money(target) + inYrs;
   steps[2].className = "step done";
   $("r3").textContent = "✓";
   await wait(450);
@@ -139,14 +151,20 @@ async function elRound(title, list) {
 }
 
 async function playShowdown(d) {
-  const years = 10;
+  const years = state.need ? state.need / 12 : 10;
   const s = showdown(d.banks, d.big_banks, { principal: state.amount, monthly: state.monthly, years });
+  if (state.need) {
+    const { options } = planOptions(d, { principal: state.amount, monthly: state.monthly, months: state.need });
+    const named = options.map((o) => ({ ...o, name: o.kind === "cd" ? `${o.name} CD` : o.name }));
+    s.winner = named[0];
+    s.rivals = named.slice(1, 5).reverse();
+  }
   const withFinal = (b) => ({ ...b, final: b.final ?? projectBank(b, { principal: state.amount, monthly: state.monthly, years }).at(-1) });
   $("elCards").innerHTML = "";
   $("elColBank").textContent = `Bank · your money in ${years} yrs`;
   show("elim");
   await elRound("Checking the big banks", s.big);
-  await elRound("Comparing the top online banks", s.rivals.map(withFinal));
+  await elRound(state.need ? "Comparing savings, CDs and Treasuries" : "Comparing the top online banks", s.rivals.map(withFinal));
   $("elHead").textContent = "Your best option";
   const w = elCard(withFinal(s.winner));
   await wait(450);
@@ -156,11 +174,12 @@ async function playShowdown(d) {
 }
 
 // ---------- 3. dashboard ----------
-const dashInput = $("dashInput"), dashMonthly = $("dashMonthly");
+const dashInput = $("dashInput"), dashMonthly = $("dashMonthly"), dashNeed = $("dashNeed");
 
 function openDashboard() {
   dashInput.value = state.amount.toLocaleString("en-US");
   dashMonthly.value = state.monthly.toLocaleString("en-US");
+  dashNeed.value = String(state.need);
   $("asOf").textContent = `Rates as of ${fmtDate(state.data.as_of)}`;
   renderTrend(state.data);
   renderLeaders(state.data);
@@ -180,10 +199,12 @@ function onDashEdit() {
   if (amount < 1) return; // keep the last result while the field is empty
   state.amount = amount;
   state.monthly = num(dashMonthly);
+  state.need = Number(dashNeed.value) || 0;
   history.replaceState(null, "", buildShareQuery(state));
   render();
 }
 dashInput.addEventListener("input", onDashEdit);
+dashNeed.addEventListener("change", onDashEdit);
 dashMonthly.addEventListener("input", onDashEdit);
 
 const toOpen = (b) => {
@@ -202,33 +223,108 @@ function firstYearEarned(b) {
   return projectBank(b, { principal, monthly, years: 1 }).at(-1) - principal - monthly * 12;
 }
 
-function render() {
-  const d = state.data;
-  const { amount, monthly, years } = state;
-  const { ranked, fallback, neededFor } = rankBanks(d.banks, { principal: amount, monthly, years });
-  const top = ranked[0];
-  const chase = comparisonBank(d);
+// ---------- options for a fixed timeline ----------
+const NEED_LABEL = { 0: "anytime", 12: "in 1 year", 24: "in 2 years", 36: "in 3 years", 60: "in 5 years" };
+const optName = (o) => (o.kind === "cd" ? `${o.name} CD` : o.name);
+const KIND = { savings: "Savings", cd: "CD", treasury: "Treasury" };
+const lockedUntil = (months) => {
+  const dt = new Date(); dt.setMonth(dt.getMonth() + months);
+  return dt.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+};
+const optTrade = (o) => ({
+  savings: "Rate can change anytime · withdraw anytime",
+  cd: `Fixed rate · locked until ${lockedUntil(o.term_months)} · penalty to withdraw early`
+    + (o.min_deposit ? ` · ${money(o.min_deposit)} minimum` : ""),
+  treasury: "Fixed rate · backed by the U.S. government · no state income tax · can sell early at market price",
+})[o.kind];
+const optLink = (o) => {
+  if (!o.url) return "";
+  const label = o.kind === "treasury" ? "Buy at TreasuryDirect →" : o.kind === "cd" ? "See details →" : "Open account →";
+  return `<a class="open" href="${esc(o.url)}" target="_blank" rel="noopener">${label}</a>`;
+};
 
-  $("ansH").innerHTML = `Put it in <em>${esc(top.name)}</em>`;
-  $("ansWhy").textContent =
-    `${rateLabel(top)} APY · ${toOpen(top)} · FDIC insured · earns ${money(firstYearEarned(top))} in year one`;
-  $("ansCta").innerHTML = badge(top) + openLink(top);
+function answerForPlan(top, plan) {
+  const yrs = top.term_months ? top.term_months / 12 : state.need / 12;
+  const term = `${yrs}-year`;
+  if (top.kind === "cd") {
+    $("ansH").innerHTML = `Lock it in a <em>${term} CD</em> at ${esc(top.name)}`;
+  } else if (top.kind === "treasury") {
+    $("ansH").innerHTML = `Buy a <em>${term} Treasury</em>`;
+  } else {
+    $("ansH").innerHTML = `Put it in <em>${esc(top.name)}</em>`;
+  }
+  const rate = top.kind === "treasury"
+    ? `${top.yield.toFixed(2)}% yield (about ${top.apy.toFixed(2)}% APY)`
+    : `${top.kind === "savings" ? rateLabel(top.bank) : top.apy.toFixed(2) + "%"} APY`;
+  const insured = top.kind === "treasury" ? "" : " · FDIC insured";
+  $("ansWhy").textContent = `${rate} · ${optTrade(top)}${insured}`;
+  $("ansCta").innerHTML = (top.kind === "savings" ? badge(top.bank) : "") + optLink(top);
 
   const fb = $("fallback");
-  fb.hidden = !(fallback && neededFor);
-  if (!fb.hidden) fb.innerHTML = `Most top rates need <b>${money(neededFor)}+</b> to earn their APY.`;
+  fb.hidden = !top.monthlyTo;
+  if (top.monthlyTo) fb.innerHTML = `Your <b>${money(state.monthly)}/mo</b> can't go into a ${top.kind === "cd" ? "CD" : "Treasury"}, so it's counted in <b>${esc(top.monthlyTo)}</b> savings alongside it.`;
 
-  const edge = d.treasury_1y ? treasuryEdge(top, d.treasury_1y.rate, amount) : null;
+  // why not savings: the trade-off in one line
+  const bestSavings = plan.options.find((o) => o.kind === "savings");
   const tr = $("treasury");
-  tr.hidden = !edge;
-  if (edge) tr.innerHTML = `Won't need it for a year? A 1-year Treasury pays <b>${edge.rate.toFixed(2)}%</b>, about <b>${money(edge.extra)}</b> more.`;
+  tr.hidden = top.kind === "savings" || !bestSavings;
+  if (!tr.hidden) tr.innerHTML = `That's <b>${money(top.final - bestSavings.final)}</b> more than ${esc(bestSavings.name)} savings, if today's savings rate held. Savings rates can drop; this one is locked.`;
+}
 
-  // growth card
+function render() {
+  const d = state.data;
+  const { amount, monthly, need } = state;
+  const years = need ? need / 12 : state.years;
+  const chase = comparisonBank(d);
+  let top, topSeries, listRows, fdicPool, display;
+
+  if (need) {
+    const plan = planOptions(d, { principal: amount, monthly, months: need });
+    top = plan.top;
+    topSeries = top.series;
+    display = { name: optName(top), apy: top.apy };
+    answerForPlan(top, plan);
+    $("listHead").textContent = `Your options for money you need ${NEED_LABEL[need]}`;
+    listRows = plan.options.slice(1, 7).map((o) => `
+      <div class="row">
+        <div class="n">${esc(optName(o))}<span class="kind">${KIND[o.kind]}</span><small>${esc(optTrade(o))}</small>${optLink(o)}</div>
+        <div class="a mono">${o.apy.toFixed(2)}%</div>
+        <div class="e mono">${money(o.final)}</div>
+      </div>`);
+    fdicPool = top.kind === "treasury" ? null : plan.options.filter((o) => o.kind === top.kind);
+  } else {
+    const { ranked, fallback, neededFor } = rankBanks(d.banks, { principal: amount, monthly, years });
+    const bank = ranked[0];
+    top = bank;
+    topSeries = projectBank(bank, { principal: amount, monthly, years });
+    display = { name: bank.name, apy: bank.apy };
+    $("ansH").innerHTML = `Put it in <em>${esc(bank.name)}</em>`;
+    $("ansWhy").textContent =
+      `${rateLabel(bank)} APY · ${toOpen(bank)} · FDIC insured · earns ${money(firstYearEarned(bank))} in year one`;
+    $("ansCta").innerHTML = badge(bank) + openLink(bank);
+    const fb = $("fallback");
+    fb.hidden = !(fallback && neededFor);
+    if (!fb.hidden) fb.innerHTML = `Most top rates need <b>${money(neededFor)}+</b> to earn their APY.`;
+    const edge = d.treasury_1y ? treasuryEdge(bank, d.treasury_1y.rate, amount) : null;
+    const tr = $("treasury");
+    tr.hidden = !edge;
+    if (edge) tr.innerHTML = `Won't need it for a year? A 1-year Treasury pays <b>${edge.rate.toFixed(2)}%</b>, about <b>${money(edge.extra)}</b> more.`;
+    $("listHead").textContent = "Other great options · first year";
+    listRows = ranked.slice(1, 5).map((b) => `
+      <div class="row">
+        <div class="n">${esc(b.name)}${badge(b)}<small>${esc(rateLabel(b))} APY · ${toOpen(b)}</small>${openLink(b)}</div>
+        <div class="a mono">${b.apy.toFixed(2)}%</div>
+        <div class="e mono">${money(firstYearEarned(b))}</div>
+      </div>`);
+    fdicPool = ranked;
+  }
+
+  // growth card (a fixed timeline sets the horizon, so the tabs hide)
+  $("tabs").hidden = Boolean(need);
   $("tabs").innerHTML = HORIZONS.map((y) =>
     `<button class="tab ${y === years ? "on" : ""}" data-y="${y}" aria-pressed="${y === years}">${y} yr</button>`).join("");
   $("tabs").querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => { state.years = Number(t.dataset.y); render(); }));
 
-  const topSeries = projectBank(top, { principal: amount, monthly, years });
   const chaseSeries = chase ? project({ principal: amount, monthly, apy: chase.apy, promo: null, years }) : null;
   const end = topSeries.at(-1);
   const deposited = amount + monthly * years * 12;
@@ -237,37 +333,32 @@ function render() {
   $("gVsLabel").textContent = chase ? `At ${chase.name.replace("JPMorgan ", "")} instead` : "";
   $("gVs").textContent = chaseSeries ? money(chaseSeries.at(-1)) : "";
   drawChart(topSeries, chaseSeries, years);
-  $("gLegend").innerHTML = `<span><i style="border-color:#22e07a"></i>${esc(top.name)}</span>`
+  $("gLegend").innerHTML = `<span><i style="border-color:#22e07a"></i>${esc(display.name)}</span>`
     + (chase ? `<span><i style="border-color:#e05252"></i>${esc(chase.name)}</span>` : "");
   attachTip($("chart"), $("gTip"), topSeries.length - 1, (i) => {
     const m = years * 12 * i / (topSeries.length - 1);
     const label = m === 0 ? "Today" : m < 12 ? `Month ${Math.round(m)}` : `Year ${(m / 12).toFixed(m % 12 ? 1 : 0)}`;
-    return tipHtml(label, [["#22e07a", top.name, money(topSeries[i])], ...(chase ? [["#e05252", chase.name, money(chaseSeries[i])]] : [])]);
+    return tipHtml(label, [["#22e07a", display.name, money(topSeries[i])], ...(chase ? [["#e05252", chase.name, money(chaseSeries[i])]] : [])]);
   });
 
-  renderTiles(top, chase, topSeries, chaseSeries);
-  renderBigBars(top, d, topSeries.at(-1));
+  renderTiles(display, chase, topSeries, chaseSeries, years);
+  renderBigBars(display, d, end, years);
 
-  // list
-  const rows = ranked.slice(1, 5).map((b) => `
-    <div class="row">
-      <div class="n">${esc(b.name)}${badge(b)}<small>${esc(rateLabel(b))} APY · ${toOpen(b)}</small>${openLink(b)}</div>
-      <div class="a mono">${b.apy.toFixed(2)}%</div>
-      <div class="e mono">${money(firstYearEarned(b))}</div>
-    </div>`);
-  if (chase) rows.push(`
+  if (chase) listRows.push(`
     <div class="row chase">
       <div class="n">${esc(chase.name)}<small>Typical big-bank savings · as of ${fmtDate(chase.as_of)}</small></div>
       <div class="a mono">${chase.apy.toFixed(2)}%</div>
-      <div class="e mono">${money(firstYearEarned({ apy: chase.apy, promo: null }))}</div>
+      <div class="e mono">${money(need ? chaseSeries.at(-1) : firstYearEarned({ apy: chase.apy, promo: null }))}</div>
     </div>`);
-  $("rows").innerHTML = rows.join("");
+  $("rows").innerHTML = listRows.join("");
 
   // FDIC
   const note = $("note");
   note.hidden = amount <= FDIC_LIMIT;
-  if (!note.hidden) {
-    const { parts, uninsured } = fdicSplit(amount, ranked);
+  if (!note.hidden && !fdicPool) {
+    note.innerHTML = `<b>Good to know:</b> Treasuries are backed by the U.S. government, so the ${money(FDIC_LIMIT)} FDIC limit doesn't apply.`;
+  } else if (!note.hidden) {
+    const { parts, uninsured } = fdicSplit(amount, fdicPool.map((o) => ({ name: need ? optName(o) : o.name })));
     const list = parts.map((p) => `<b>${money(p.amount)}</b> at ${esc(p.name)}`).join(", ");
     note.innerHTML = `<b>Tip:</b> the FDIC insures up to ${money(FDIC_LIMIT)} per bank. To keep your money protected, split it: ${list}.`
       + (uninsured > 0 ? ` <b>${money(uninsured)}</b> would be over the insured limit.` : "");
@@ -345,8 +436,8 @@ function countUp(el, to, fmt) {
 
 const cents = (n) => n < 10 ? "$" + n.toFixed(2) : money(n);
 
-function renderTiles(top, chase, topSeries, chaseSeries) {
-  const { amount, years } = state;
+function renderTiles(top, chase, topSeries, chaseSeries, years) {
+  const { amount } = state;
   const firstMonth = amount * ((1 + top.apy / 100) ** (1 / 12) - 1);
   const gap = chaseSeries ? topSeries.at(-1) - chaseSeries.at(-1) : null;
   const fed = state.data.fed_funds;
@@ -372,8 +463,8 @@ function hbars(el, rows, max) {
     el.querySelectorAll(".fill").forEach((f) => { f.style.width = f.dataset.w + "%"; })));
 }
 
-function renderBigBars(top, d, topFinal) {
-  const { amount, monthly, years } = state;
+function renderBigBars(top, d, topFinal, years) {
+  const { amount, monthly } = state;
   const rows = [{ name: top.name, value: topFinal, label: money(topFinal), sub: `${top.apy.toFixed(2)}% / yr`, hi: true }];
   for (const b of d.big_banks) {
     const v = project({ principal: amount, monthly, apy: b.apy, promo: null, years }).at(-1);
@@ -476,5 +567,6 @@ if (shared) {
   show(null); // stay black instead of flashing the ask screen
   state.amount = shared.amount;
   state.monthly = shared.monthly;
+  state.need = shared.need;
   dataReady.then((d) => { if (d) openDashboard(); });
 }

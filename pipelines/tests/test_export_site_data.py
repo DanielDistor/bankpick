@@ -64,8 +64,14 @@ def tmp_duckdb_with_marts():
       ) t(bank_name, rate_date, apy_pct)""")
     c.execute("""CREATE TABLE STAGING.stg_fred_observations AS SELECT * FROM (VALUES
         ('FEDFUNDS', DATE '2026-09-01', 4.10), ('FEDFUNDS', DATE '2026-10-01', 3.88),
-        ('GS1', DATE '2026-10-01', 4.46)
+        ('GS1', DATE '2026-10-01', 4.46), ('GS2', DATE '2026-10-01', 4.74),
+        ('GS3', DATE '2026-10-01', 4.80), ('GS5', DATE '2026-10-01', 4.93)
       ) t(series_id, date_day, rate_pct)""")
+    c.execute("""CREATE TABLE STAGING.stg_cd_offers AS SELECT * FROM (VALUES
+        ('Happen Bank', 24, 4.76, 500.0, 'https://www.bankrate.com/banking/reviews/happen-bank/', DATE '2026-11-05'),
+        ('Barclays', 24, 4.75, 0.0, NULL, DATE '2026-11-05'),
+        ('CFG Bank', 12, 4.65, 500.0, NULL, DATE '2026-11-05')
+      ) t(bank_name, term_months, apy_pct, min_deposit, url, snapshot_date)""")
     c.execute("""CREATE TABLE STAGING.stg_big_bank_savings AS SELECT * FROM (VALUES
         ('Citibank', 0.05, DATE '2026-11-06'),
         ('JPMorgan Chase', 0.01, DATE '2026-11-06')
@@ -76,7 +82,7 @@ def tmp_duckdb_with_marts():
 
 def test_payload_shape(tmp_duckdb_with_marts):
     p = build_payload(tmp_duckdb_with_marts, today=D("2026-11-05"))
-    assert set(p) == {"as_of", "fed_funds", "treasury_1y", "banks", "big_banks", "trend"}
+    assert set(p) == {"as_of", "fed_funds", "treasury_1y", "banks", "big_banks", "trend", "cds", "treasuries"}
     assert p["as_of"] == "2026-11-05"
     assert p["fed_funds"] == {"rate": 3.88, "as_of": "2026-10-01"}
     assert p["treasury_1y"] == {"rate": 4.46, "as_of": "2026-10-01"}
@@ -127,3 +133,17 @@ def test_flagged_spike_is_excluded_from_leaders_but_reported(tmp_duckdb_with_mar
     week_1019 = [l for l in p["trend"]["leaders"] if l["week"] == "2026-10-19"]
     assert week_1019 == [{"week": "2026-10-19", "name": "Peak Bank", "apy": 4.27}]
     assert [(f["bank"], f["date"], f["apy"]) for f in p["trend"]["flags"]] == [("CIT Bank", "2026-10-20", 5.0)]
+
+
+def test_cds_and_treasuries_by_term(tmp_duckdb_with_marts):
+    p = build_payload(tmp_duckdb_with_marts, today=D("2026-11-05"))
+    assert p["cds"] == [
+        {"name": "CFG Bank", "term_months": 12, "apy": 4.65, "min_deposit": 500, "url": None},
+        {"name": "Happen Bank", "term_months": 24, "apy": 4.76, "min_deposit": 500,
+         "url": "https://www.bankrate.com/banking/reviews/happen-bank/"},
+        {"name": "Barclays", "term_months": 24, "apy": 4.75, "min_deposit": 0, "url": None},
+    ]
+    assert p["treasuries"] == {
+        "12": {"rate": 4.46, "as_of": "2026-10-01"}, "24": {"rate": 4.74, "as_of": "2026-10-01"},
+        "36": {"rate": 4.8, "as_of": "2026-10-01"}, "60": {"rate": 4.93, "as_of": "2026-10-01"},
+    }
