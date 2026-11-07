@@ -364,8 +364,8 @@
       },
       {
         "week": "2026-08-17",
-        "name": "Accordia Bank",
-        "apy": 5.0
+        "name": "Happen Bank",
+        "apy": 4.0
       },
       {
         "week": "2026-08-24",
@@ -472,6 +472,64 @@
         "date": "2026-10-01",
         "rate": 3.88
       }
+    ],
+    "flags": [
+      {
+        "bank": "Accordia Bank",
+        "date": "2026-08-18",
+        "apy": 5.0,
+        "before": 4.0,
+        "after": 4.0,
+        "reason": "Jumped 1.00 pts for one week, then reverted"
+      }
     ]
-  }
+  },
+  "health": {
+    "generated_at": "2026-11-07T03:44:23Z",
+    "checks": [
+      {
+        "name": "Rates are fresh",
+        "ok": true,
+        "detail": "Bankrate rates as of 2026-11-05"
+      },
+      {
+        "name": "Banks parsed",
+        "ok": true,
+        "detail": "12 banks"
+      },
+      {
+        "name": "APYs in a sane range",
+        "ok": true,
+        "detail": "all between 0% and 10%"
+      },
+      {
+        "name": "No duplicate banks",
+        "ok": true,
+        "detail": "none"
+      },
+      {
+        "name": "Fed data is current",
+        "ok": true,
+        "detail": "FRED, 2026-10-01"
+      },
+      {
+        "name": "Big-bank rates are fresh",
+        "ok": false,
+        "detail": "as of 2026-04-26 (194 days old)"
+      },
+      {
+        "name": "dbt tests",
+        "ok": true,
+        "detail": "32 of 32 passed"
+      }
+    ],
+    "history_weeks": 52
+  },
+  "brief": [
+    {
+      "date": "2026-11-06",
+      "headline": "Peak Bank is #1 at 4.27%.",
+      "items": []
+    }
+  ]
 }

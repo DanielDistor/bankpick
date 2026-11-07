@@ -106,12 +106,25 @@ def test_monthly_deposit_requirement_exported(tmp_duckdb_with_marts):
 
 def test_trend_weekly_leader_and_fed_funds(tmp_duckdb_with_marts):
     c = tmp_duckdb_with_marts
-    # CIT reports mid-week and briefly leads the week of 10/26
+    # CIT raises mid-week (latest point in the week wins) and the raise sticks
     c.execute("INSERT INTO MART.fct_savings_rate_history VALUES ('CIT Bank', DATE '2026-10-29', 4.40)")
+    c.execute("UPDATE MART.fct_savings_rate_history SET apy_pct = 4.40 WHERE bank_name = 'CIT Bank' AND rate_date = DATE '2026-11-03'")
     p = build_payload(c, today=D("2026-11-05"))
     assert p["trend"]["leaders"] == [
         {"week": "2026-10-26", "name": "CIT Bank", "apy": 4.4},
-        {"week": "2026-11-02", "name": "Peak Bank", "apy": 4.27},
+        {"week": "2026-11-02", "name": "CIT Bank", "apy": 4.4},
     ]
+    assert p["trend"]["flags"] == []
     # Fed funds from the month the history starts
     assert p["trend"]["fed_funds"] == [{"date": "2026-10-01", "rate": 3.88}]
+
+
+def test_flagged_spike_is_excluded_from_leaders_but_reported(tmp_duckdb_with_marts):
+    c = tmp_duckdb_with_marts
+    c.execute("""INSERT INTO MART.fct_savings_rate_history VALUES
+        ('CIT Bank', DATE '2026-10-13', 3.75), ('CIT Bank', DATE '2026-10-20', 5.00),
+        ('Peak Bank', DATE '2026-10-13', 4.27), ('Peak Bank', DATE '2026-10-20', 4.27)""")
+    p = build_payload(c, today=D("2026-11-05"))
+    week_1019 = [l for l in p["trend"]["leaders"] if l["week"] == "2026-10-19"]
+    assert week_1019 == [{"week": "2026-10-19", "name": "Peak Bank", "apy": 4.27}]
+    assert [(f["bank"], f["date"], f["apy"]) for f in p["trend"]["flags"]] == [("CIT Bank", "2026-10-20", 5.0)]

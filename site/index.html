@@ -74,6 +74,13 @@
 
     <div class="tiles" id="tiles"></div>
 
+    <div class="card brief" id="briefCard" hidden>
+      <div class="brief-top"><div class="eyebrow">Today's brief · <span id="briefDate"></span></div><a class="rss" href="data/feed.xml" target="_blank" rel="noopener">RSS feed</a></div>
+      <h3 id="briefHead"></h3>
+      <ul id="briefItems"></ul>
+      <details id="briefMore" hidden><summary>Earlier briefs</summary><ul id="briefOld"></ul></details>
+    </div>
+
     <div class="growth">
       <div class="head">
         <div><div class="big mono" id="gBig"></div><div class="cap" id="gCap"></div></div>
@@ -109,6 +116,13 @@
     </div>
 
     <div class="note" id="note" hidden></div>
+
+    <div class="card health" id="healthCard" hidden>
+      <div class="brief-top"><div class="eyebrow">Data health</div><span class="status" id="healthStatus"></span></div>
+      <p class="card-sub" id="healthSub"></p>
+      <ul class="checks" id="healthChecks"></ul>
+      <div class="flags" id="healthFlags"></div>
+    </div>
     <div class="foot">High-yield savings accounts, FDIC insured. Rates from Bankrate, refreshed daily. Not financial advice.</div>
   </div>
 </section>

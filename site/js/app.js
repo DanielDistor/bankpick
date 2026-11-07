@@ -164,6 +164,8 @@ function openDashboard() {
   $("asOf").textContent = `Rates as of ${fmtDate(state.data.as_of)}`;
   renderTrend(state.data);
   renderLeaders(state.data);
+  renderBrief(state.data);
+  renderHealth(state.data);
   state.animate = true;
   render();
   state.animate = false;
@@ -392,7 +394,9 @@ function renderTrend(d) {
   const fedAt = (iso) => { let r = null; for (const f of t.fed_funds) if (f.date <= iso) r = f.rate; return r ?? t.fed_funds[0]?.rate ?? null; };
   const fed = L.map((l) => fedAt(l.week));
   const W = 680, H = 220, Lm = 48, R = 10, T = 10, B = 24;
-  const vals = L.map((l) => l.apy).concat(fed.filter((v) => v != null));
+  const weekOf = (iso) => { const dt = new Date(iso + "T00:00:00"); dt.setDate(dt.getDate() - ((dt.getDay() + 6) % 7)); return dt.toISOString().slice(0, 10); };
+  const flags = (t.flags || []).map((f) => ({ ...f, i: L.findIndex((l) => l.week === weekOf(f.date)) })).filter((f) => f.i >= 0);
+  const vals = L.map((l) => l.apy).concat(fed.filter((v) => v != null), flags.map((f) => f.apy));
   const yMin = Math.floor((Math.min(...vals) - 0.15) * 10) / 10, yMax = Math.ceil((Math.max(...vals) + 0.1) * 10) / 10;
   const n = L.length - 1;
   const x = (i) => Lm + (W - Lm - R) * i / n;
@@ -408,10 +412,15 @@ function renderTrend(d) {
   $("trend").innerHTML = grid.join("")
     + `<path d="${step(fed)}" stroke="#9aa7a0" stroke-width="2" fill="none"/>`
     + `<path d="${line(L.map((l) => l.apy))}" stroke="#22e07a" stroke-width="2.5" fill="none" stroke-linejoin="round"/>`
-    + `<circle cx="${x(n)}" cy="${y(L[n].apy)}" r="4" fill="#22e07a"/>` + ticks;
-  $("trLegend").innerHTML = `<span><i style="border-color:#22e07a"></i>Best online savings rate</span><span><i style="border-color:#9aa7a0"></i>Fed funds rate</span>`;
+    + `<circle cx="${x(n)}" cy="${y(L[n].apy)}" r="4" fill="#22e07a"/>`
+    + flags.map((f) => `<circle cx="${x(f.i)}" cy="${y(f.apy)}" r="5" fill="none" stroke="#f0b429" stroke-width="2"/>`
+      + `<text x="${x(f.i) + 9}" y="${y(f.apy) + 4}" fill="#f0b429" font-size="11" font-family="Inter, sans-serif">! flagged</text>`).join("")
+    + ticks;
+  $("trLegend").innerHTML = `<span><i style="border-color:#22e07a"></i>Best online savings rate</span><span><i style="border-color:#9aa7a0"></i>Fed funds rate</span>`
+    + (flags.length ? `<span style="color:#f0b429">○ Flagged data point (left out)</span>` : "");
   attachTip($("trend"), $("trTip"), n, (i) => tipHtml(`Week of ${fmtDate(L[i].week)}`,
-    [["#22e07a", L[i].name, L[i].apy.toFixed(2) + "%"], ["#9aa7a0", "Fed funds rate", fed[i] == null ? "—" : fed[i].toFixed(2) + "%"]]), { L: Lm, R, T });
+    [["#22e07a", L[i].name, L[i].apy.toFixed(2) + "%"], ["#9aa7a0", "Fed funds rate", fed[i] == null ? "—" : fed[i].toFixed(2) + "%"],
+      ...flags.filter((f) => f.i === i).map((f) => ["#f0b429", `${f.bank} · flagged, left out`, f.apy.toFixed(2) + "%"])]), { L: Lm, R, T });
   const chase = comparisonBank(d);
   const spread = L[n].apy - (fed[n] ?? 0);
   $("trSub").innerHTML = `The best online banks move with the Fed and pay <b>${spread >= 0 ? "above" : "below"}</b> it today (${L[n].apy.toFixed(2)}% vs ${(fed[n] ?? 0).toFixed(2)}%).`
@@ -429,6 +438,36 @@ function renderLeaders(d) {
   })), Math.max(...st.weeks.map((w) => w.weeks)));
   $("ldSub").innerHTML = `The top spot changed hands <b>${st.changes} times</b> in ${t.leaders.length} weeks. `
     + `That's why we re-check every day. Current #1: <b>${esc(st.current)}</b>.`;
+}
+
+function renderBrief(d) {
+  const log = d.brief || [];
+  $("briefCard").hidden = !log.length;
+  if (!log.length) return;
+  const [today, ...older] = log;
+  $("briefDate").textContent = fmtDate(today.date, { month: "short", day: "numeric" });
+  $("briefHead").textContent = today.headline;
+  $("briefItems").innerHTML = today.items.map((t) => `<li>${esc(t)}</li>`).join("");
+  $("briefMore").hidden = !older.length;
+  $("briefOld").innerHTML = older.map((e) =>
+    `<li><b>${esc(fmtDate(e.date, { month: "short", day: "numeric" }))}</b>${esc(e.headline)}${e.items.length ? " " + esc(e.items.join(" ")) : ""}</li>`).join("");
+}
+
+function renderHealth(d) {
+  const h = d.health;
+  $("healthCard").hidden = !h?.checks?.length;
+  if (!h?.checks?.length) return;
+  const bad = h.checks.filter((c) => !c.ok);
+  const st = $("healthStatus");
+  st.className = "status " + (bad.length ? "warn" : "good");
+  st.textContent = bad.length ? `! ${bad.length} check${bad.length > 1 ? "s" : ""} need${bad.length > 1 ? "" : "s"} attention` : "✓ All checks passing";
+  const ran = new Date(h.generated_at);
+  $("healthSub").innerHTML = `The pipeline checks its own data every day before publishing. Last run <b>${esc(ran.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }))}</b> · ${h.history_weeks} weeks of rate history.`;
+  $("healthChecks").innerHTML = h.checks.map((c) =>
+    `<li class="${c.ok ? "ok" : "bad"}"><span class="ic" aria-label="${c.ok ? "passing" : "needs attention"}">${c.ok ? "✓" : "!"}</span><div>${esc(c.name)}<small>${esc(c.detail)}</small></div></li>`).join("");
+  const flags = d.trend?.flags || [];
+  $("healthFlags").innerHTML = flags.map((f) =>
+    `<div class="flag"><b>! Flagged:</b> ${esc(f.bank)} at ${f.apy.toFixed(2)}% on ${esc(fmtDate(f.date))}. ${esc(f.reason)} (${f.before.toFixed(2)}% → ${f.apy.toFixed(2)}% → ${f.after.toFixed(2)}%). Likely a data error, so it's left out of rankings and badges.</div>`).join("");
 }
 
 // ---------- boot: a share link skips straight to the dashboard ----------
