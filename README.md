@@ -37,11 +37,11 @@ On $25k plus $500 a month, that's $27,285 more after 10 years just from picking 
 | ![Big banks](docs/screenshots/big-banks.png) | ![Rate vs Fed](docs/screenshots/rate-vs-fed.png) |
 
 - The pick, with an open account link and its track record ("Top 3 for 5 weeks")
-- What you'll have, how much more than Chase, first month's interest, the Fed rate
+- The next 3 best options right under it, with what each gets you and how much less
 - **Today's brief:** what changed since yesterday, also as an [RSS feed](https://danieldistor.github.io/deposit-pricing-analytics-banking/data/feed.xml)
 - Growth chart vs Chase, plus what the same money does at Chase, BofA, Wells Fargo and Citi
 - Best online rate vs the Fed over the past year, and who's held #1
-- Every other option ranked, an FDIC split over $250k, and the data health panel
+- An FDIC split over $250k, and the data health panel
 
 <p align="center"><img src="docs/screenshots/mobile-ask.png" width="260" alt="Phone: ask"> &nbsp; <img src="docs/screenshots/mobile-dashboard.png" width="260" alt="Phone: dashboard"></p>
 
