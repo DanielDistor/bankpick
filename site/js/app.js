@@ -195,7 +195,6 @@ const ratePhrase = (b) => b.promo
 // ---------- options for a fixed timeline ----------
 const NEED_LABEL = { 0: "anytime", 12: "in 1 year", 24: "in 2 years", 36: "in 3 years", 60: "in 5 years" };
 const optName = (o) => (o.kind === "cd" ? `${o.name} CD` : o.name);
-const KIND = { savings: "Savings", cd: "CD", treasury: "Treasury" };
 const lockedUntil = (months) => {
   const dt = new Date(); dt.setMonth(dt.getMonth() + months);
   return dt.toLocaleDateString("en-US", { month: "short", year: "numeric" });
@@ -247,6 +246,17 @@ function answerForPlan(top, plan) {
   if (!tr.hidden) tr.innerHTML = `That's <b>${money(top.final - bestSavings.final)}</b> more than ${esc(bestSavings.name)} savings, and savings rates can drop while this one can't`;
 }
 
+function nextRow(rank, name, kind, detail, link, apy, final, topFinal) {
+  const gap = Math.round(topFinal - final);
+  return `
+    <div class="row">
+      <div class="rk mono">#${rank}</div>
+      <div class="n">${esc(name)}${kind ? `<span class="kind">${kind}</span>` : ""}<small>${esc(detail)}</small>${link}</div>
+      <div class="a mono">${apy.toFixed(2)}%</div>
+      <div class="e mono">${money(final)}<small>${gap > 0 ? `${money(gap)} less` : "same"}</small></div>
+    </div>`;
+}
+
 function render() {
   const d = state.data;
   const { amount, monthly, need } = state;
@@ -260,13 +270,7 @@ function render() {
     topSeries = top.series;
     display = { name: optName(top), apy: top.apy };
     answerForPlan(top, plan);
-    $("listHead").textContent = `Your options for money you need ${NEED_LABEL[need]}`;
-    listRows = plan.options.slice(1, 7).map((o) => `
-      <div class="row">
-        <div class="n">${esc(optName(o))}<span class="kind">${KIND[o.kind]}</span><small>${esc(optTrade(o))}</small>${optLink(o)}</div>
-        <div class="a mono">${o.apy.toFixed(2)}%</div>
-        <div class="e mono">${money(o.final)}</div>
-      </div>`);
+    listRows = plan.options.slice(1, 4).map((o, i) => nextRow(i + 2, optName(o), o.kind === "savings" ? "Savings" : null, optTrade(o), optLink(o), o.apy, o.final, top.final));
     fdicPool = top.kind === "treasury" ? null : plan.options.filter((o) => o.kind === top.kind);
   } else {
     const { ranked, fallback, neededFor } = rankBanks(d.banks, { principal: amount, monthly, years });
@@ -285,13 +289,10 @@ function render() {
     const tr = $("treasury");
     tr.hidden = !edge;
     if (edge) tr.innerHTML = `Won't touch it for a year? A 1-year Treasury pays <b>${edge.rate.toFixed(2)}%</b>, about <b>${money(edge.extra)}</b> more`;
-    $("listHead").textContent = "Other great options · first year";
-    listRows = ranked.slice(1, 5).map((b) => `
-      <div class="row">
-        <div class="n">${esc(b.name)}${badge(b)}<small>${esc(rateLabel(b))} APY · ${toOpen(b)}</small>${openLink(b)}</div>
-        <div class="a mono">${b.apy.toFixed(2)}%</div>
-        <div class="e mono">${money(firstYearEarned(b))}</div>
-      </div>`);
+    listRows = ranked.slice(1, 4).map((b, i) => {
+      const fin = projectBank(b, { principal: amount, monthly, years }).at(-1);
+      return nextRow(i + 2, b.name, null, `${rateLabel(b)} · ${toOpen(b)}`, openLink(b), b.apy, fin, topSeries.at(-1));
+    });
     fdicPool = ranked;
   }
 
@@ -317,15 +318,9 @@ function render() {
     return tipHtml(label, [["#22e07a", display.name, money(topSeries[i])], ...(chase ? [["#e05252", chase.name, money(chaseSeries[i])]] : [])]);
   });
 
-  renderTiles(display, chase, topSeries, chaseSeries, years);
   renderBigBars(display, d, end, years);
 
-  if (chase) listRows.push(`
-    <div class="row chase">
-      <div class="n">${esc(chase.name)}<small>Typical big-bank savings · as of ${fmtDate(chase.as_of)}</small></div>
-      <div class="a mono">${chase.apy.toFixed(2)}%</div>
-      <div class="e mono">${money(need ? chaseSeries.at(-1) : firstYearEarned({ apy: chase.apy, promo: null }))}</div>
-    </div>`);
+  $("listHead").textContent = `Next best options · what you'd have in ${yrsText(years)}`;
   $("rows").innerHTML = listRows.join("");
 
   // FDIC
@@ -397,35 +392,6 @@ function attachTip(svg, tip, n, html, { L = 4, R = 10, T = 10 } = {}) {
     tip.style.left = Math.max(0, Math.min(r.width - w, px + (px > r.width / 2 ? -w - 12 : 12))) + "px";
   };
   svg.onpointerleave = () => { tip.hidden = true; hair.setAttribute("visibility", "hidden"); };
-}
-
-function countUp(el, to, fmt) {
-  if (!state.animate || matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = fmt(to); return; }
-  const t0 = performance.now(), dur = 900;
-  const step = () => {
-    const k = Math.min(1, (performance.now() - t0) / dur);
-    el.textContent = fmt(to * (1 - (1 - k) ** 3));
-    if (k < 1) requestAnimationFrame(step);
-  };
-  step();
-}
-
-const cents = (n) => n < 10 ? "$" + n.toFixed(2) : money(n);
-
-function renderTiles(top, chase, topSeries, chaseSeries, years) {
-  const { amount } = state;
-  const firstMonth = amount * ((1 + top.apy / 100) ** (1 / 12) - 1);
-  const gap = chaseSeries ? topSeries.at(-1) - chaseSeries.at(-1) : null;
-  const fed = state.data.fed_funds;
-  const tiles = [
-    { k: `In ${years} year${years > 1 ? "s" : ""}`, v: topSeries.at(-1), f: money, cls: "up", s: `at ${top.name}` },
-    gap != null && { k: "More than Chase", v: gap, f: (n) => "+" + money(n), cls: "up", s: `over ${years} year${years > 1 ? "s" : ""}` },
-    { k: "Interest, first month", v: firstMonth, f: money, s: chase ? `vs ${cents(amount * ((1 + chase.apy / 100) ** (1 / 12) - 1))} at Chase` : "" },
-    fed && { k: "Fed funds rate", v: fed.rate, f: (n) => n.toFixed(2) + "%", s: `${fmtDate(fed.as_of, { month: "short", year: "numeric" })} · sets savings rates` },
-  ].filter(Boolean);
-  $("tiles").innerHTML = tiles.map((t, i) =>
-    `<div class="tile"><div class="k">${esc(t.k)}</div><div class="v ${t.cls || ""}" id="tv${i}"></div><div class="s">${esc(t.s)}</div></div>`).join("");
-  tiles.forEach((t, i) => countUp($("tv" + i), t.v, t.f));
 }
 
 function hbars(el, rows, max) {
