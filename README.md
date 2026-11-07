@@ -28,7 +28,9 @@ On $25k plus $500 a month, that's $27,285 more after 10 years just from picking 
 - **Need it anytime:** best high-yield savings account, with promos and minimums accounted for
 - **Need it in 1, 2, 3 or 5 years:** savings vs CDs of that exact length vs the matching Treasury, whichever ends highest wins
 - **Monthly adds** can't go into a CD or Treasury, so they get counted in the top savings account next to it
-- Change any number right on the dashboard, and every result has its own link to share
+- Change any number right on the dashboard and it updates in place, no reload
+- Every result has its own link to share (`?amount=25000&monthly=500&need=24`)
+- **Start over** takes you back to the question with your numbers still filled in
 
 ## What's on the dashboard
 
@@ -42,7 +44,7 @@ Built like a rates sheet: numbers in labeled cells and tables, not paragraphs
 
 | Full ranked table | Best online rate vs the Fed |
 |---|---|
-| ![All options](docs/screenshots/big-banks.png) | ![Rate vs Fed](docs/screenshots/rate-vs-fed.png) |
+| ![All options](docs/screenshots/all-options.png) | ![Rate vs Fed](docs/screenshots/rate-vs-fed.png) |
 
 <p align="center"><img src="docs/screenshots/mobile-ask.png" width="260" alt="Phone: ask"> &nbsp; <img src="docs/screenshots/mobile-dashboard.png" width="260" alt="Phone: dashboard"></p>
 
@@ -71,6 +73,8 @@ Only Bankrate's editorial picks get recommended. Sponsored listings are only use
 | Serve | GitHub Pages | plain HTML/CSS/JS, no framework, no build step |
 
 Runs itself: `refresh-data.yml` does the whole pipeline every day at 12:00 UTC, tests first, then `deploy-site.yml` pushes the site live
+
+Every deploy stamps the script and stylesheet links with the commit ID (`app.js?v=16eb42f`), so a browser can never mix a cached old script with a new page
 
 ### Data model
 
@@ -128,6 +132,8 @@ Just the site, using the data already in the repo:
 ```bash
 python -m http.server -d site 8000   # open http://localhost:8000
 ```
+
+If you're editing the site, hard-refresh (Cmd+Shift+R) after changes. The plain Python server lets the browser cache files
 
 The full pipeline:
 
