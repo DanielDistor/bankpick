@@ -1,25 +1,21 @@
 # Project Context
 
-## Job Posting
-- **Role:** Wealth Management Solutions Deposit Pricing Analytics – Associate
-- **Company:** JPMorganChase
-- **Location:** New York, NY
-- **SQL requirement:** "Strong proficiency with SQL, Python, SAS, Tableau"
-
 ## Project Summary
-This is an analytics engineering portfolio project for LMU ISBA-4715. The project tracks
-deposit pricing trends across major U.S. banks relative to Federal Reserve rate changes,
-built to demonstrate the skills required by the target job posting.
+**BankPick** is a portfolio project: a public, free tool that tells someone which bank, CD or
+Treasury to put their money in, based on amount, monthly contributions and when they need it.
+It's no longer graded (started as LMU ISBA-4715). Optimize for what a hiring manager or a
+regular person sees in the first 10 seconds: a clear answer, clean finance-style dashboard,
+solid data underneath.
 
-## Business Question
-When the Fed raises or lowers interest rates, how do major banks respond with their deposit
-pricing? Which banks pass through rate changes fastest? Who is winning deposits?
+## Under the hood
+The data pipeline still does deposit pricing analytics (bank rates vs the Fed funds rate,
+spreads, pass-through, star schema in dbt). That's supporting evidence, not the product.
 
 ## Tech Stack
 - **Data Warehouse:** DuckDB (free, file-based; migrated from Snowflake after the trial ended)
 - **Transformation:** dbt with dbt-duckdb (raw → staging → mart)
 - **Orchestration:** GitHub Actions (daily `refresh-data.yml` commits `site/data/rates.json`; `deploy-site.yml` publishes `site/` to GitHub Pages)
-- **Front end:** static HTML/CSS/JS savings recommender in `site/` on GitHub Pages (https://danieldistor.github.io/deposit-pricing-analytics-banking/); money math in `site/js/calc.js`, tested with `node --test 'site/tests/*.test.mjs'`
+- **Front end:** static HTML/CSS/JS savings recommender in `site/` on GitHub Pages (https://danieldistor.github.io/bankpick/); money math in `site/js/calc.js`, tested with `node --test 'site/tests/*.test.mjs'`
 - **Constraint:** everything must stay on free tiers (no paid APIs or expiring trials)
 - **IDE:** Cursor + Claude Code + Superpowers
 
@@ -54,7 +50,7 @@ To answer questions about deposit pricing trends, bank strategies, or Fed rate p
 
 ## Directory Structure
 ```
-deposit-pricing-analytics-banking/
+bankpick/
 ├── docs/
 │   ├── job-posting.pdf
 │   ├── proposal.md

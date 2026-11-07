@@ -17,7 +17,7 @@ OUT_PATH = REPO_ROOT / "site" / "data" / "rates.json"
 BRIEF_PATH = REPO_ROOT / "site" / "data" / "brief.json"
 FEED_PATH = REPO_ROOT / "site" / "data" / "feed.xml"
 DBT_RESULTS = REPO_ROOT / "dbt" / "target" / "run_results.json"
-SITE_URL = "https://danieldistor.github.io/deposit-pricing-analytics-banking/"
+SITE_URL = "https://danieldistor.github.io/bankpick/"
 COMPARISON_BANK = "JPMorgan Chase"
 TREASURY_SERIES = {12: "GS1", 24: "GS2", 36: "GS3", 60: "GS5"}  # constant-maturity yields
 

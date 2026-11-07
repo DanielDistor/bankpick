@@ -4,13 +4,13 @@
 
 BankPick tells you which bank to put your money in. Enter how much you have, what you add monthly, and when you need it back, and it ranks savings accounts, CDs and Treasuries by what you'd end up with. Rates refresh every day
 
-[![Live site](https://img.shields.io/badge/live-danieldistor.github.io-22e07a?style=flat-square)](https://danieldistor.github.io/deposit-pricing-analytics-banking/)
-[![Refresh Data](https://github.com/DanielDistor/deposit-pricing-analytics-banking/actions/workflows/refresh-data.yml/badge.svg)](https://github.com/DanielDistor/deposit-pricing-analytics-banking/actions/workflows/refresh-data.yml)
-[![Deploy Site](https://github.com/DanielDistor/deposit-pricing-analytics-banking/actions/workflows/deploy-site.yml/badge.svg)](https://github.com/DanielDistor/deposit-pricing-analytics-banking/actions/workflows/deploy-site.yml)
+[![Live site](https://img.shields.io/badge/live-bankpick-22e07a?style=flat-square)](https://danieldistor.github.io/bankpick/)
+[![Refresh Data](https://github.com/DanielDistor/bankpick/actions/workflows/refresh-data.yml/badge.svg)](https://github.com/DanielDistor/bankpick/actions/workflows/refresh-data.yml)
+[![Deploy Site](https://github.com/DanielDistor/bankpick/actions/workflows/deploy-site.yml/badge.svg)](https://github.com/DanielDistor/bankpick/actions/workflows/deploy-site.yml)
 
-**Live:** https://danieldistor.github.io/deposit-pricing-analytics-banking/
+**Live:** https://danieldistor.github.io/bankpick/
 
-Try it: [$25k + $500 a month](https://danieldistor.github.io/deposit-pricing-analytics-banking/?amount=25000&monthly=500) · [$25k you need in 2 years](https://danieldistor.github.io/deposit-pricing-analytics-banking/?amount=25000&need=24)
+Try it: [$25k + $500 a month](https://danieldistor.github.io/bankpick/?amount=25000&monthly=500) · [$25k you need in 2 years](https://danieldistor.github.io/bankpick/?amount=25000&need=24)
 
 ![Dashboard](docs/screenshots/dashboard.png)
 
@@ -43,7 +43,7 @@ Built like a rates sheet: numbers in labeled cells and tables, not paragraphs
 - **#2–#4 card:** the runner-ups with APY, value and how much less than #1, plus **See all** for the full ranked table
 - **Full table:** every option with product, minimum, liquidity (anytime or locked until a date), value and gap to #1, with Chase, BofA, Wells Fargo and Citi pinned at the bottom for reference
 - **Charts:** growth vs Chase, and the best online rate vs Fed funds over the past year with the spread in bps
-- **Weeks at #1**, the **daily brief** (also an [RSS feed](https://danieldistor.github.io/deposit-pricing-analytics-banking/data/feed.xml)), and **data health**
+- **Weeks at #1**, the **daily brief** (also an [RSS feed](https://danieldistor.github.io/bankpick/data/feed.xml)), and **data health**
 
 | Full ranked table | Best online rate vs the Fed |
 |---|---|
@@ -141,8 +141,8 @@ If you're editing the site, hard-refresh (Cmd+Shift+R) after changes. The plain 
 The full pipeline:
 
 ```bash
-git clone https://github.com/DanielDistor/deposit-pricing-analytics-banking.git
-cd deposit-pricing-analytics-banking
+git clone https://github.com/DanielDistor/bankpick.git
+cd bankpick
 pip install -r requirements.txt
 echo "FRED_API_KEY=your_free_key" > .env   # optional, falls back to FRED's keyless CSV
 
@@ -177,6 +177,6 @@ docs/                screenshots, diagrams, proposal
 
 ## Background
 
-Built for LMU ISBA-4715 (Analytics Engineering). Started as "how do banks pass Fed rate changes on to savers" and turned into BankPick, a tool that just tells you where to put your money
+Started as a class project on how banks pass Fed rate changes on to savers. The pipeline underneath still tracks that: bank rates vs the Fed, spreads and pass-through. BankPick is the part people actually use
 
 Rates are info, not financial advice
