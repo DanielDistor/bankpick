@@ -150,6 +150,11 @@ function onDashEdit() {
 }
 dashInput.addEventListener("input", onDashEdit);
 dashNeed.addEventListener("change", onDashEdit);
+let resizeTimer;
+addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { if (state.data && $("dash").classList.contains("on")) renderTrend(state.data); }, 150);
+});
 
 // Back to the question, keeping what they typed; drops the share query so a refresh starts fresh too.
 $("restart").addEventListener("click", () => {
@@ -179,6 +184,13 @@ function firstYearEarned(b) {
   const { amount: principal, monthly } = state;
   return projectBank(b, { principal, monthly, years: 1 }).at(-1) - principal - monthly * 12;
 }
+
+// ---------- plain-English answer ----------
+const yrsText = (y) => `${y} year${y === 1 ? "" : "s"}`;
+const whoseMoney = () => `Your <b>${money(state.amount)}</b>` + (state.monthly > 0 ? ` plus <b>${money(state.monthly)} a month</b>` : "");
+const ratePhrase = (b) => b.promo
+  ? `${b.promo.apy.toFixed(2)}% for ${b.promo.months} month${b.promo.months === 1 ? "" : "s"}, then ${b.apy.toFixed(2)}% a year`
+  : `${b.apy.toFixed(2)}% a year`;
 
 // ---------- options for a fixed timeline ----------
 const NEED_LABEL = { 0: "anytime", 12: "in 1 year", 24: "in 2 years", 36: "in 3 years", 60: "in 5 years" };
@@ -210,22 +222,29 @@ function answerForPlan(top, plan) {
   } else {
     $("ansH").innerHTML = `Put it in <em>${esc(top.name)}</em>`;
   }
-  const rate = top.kind === "treasury"
-    ? `${top.yield.toFixed(2)}% yield (about ${top.apy.toFixed(2)}% APY)`
-    : `${top.kind === "savings" ? rateLabel(top.bank) : top.apy.toFixed(2) + "%"} APY`;
-  const insured = top.kind === "treasury" ? "" : " · FDIC insured";
-  $("ansWhy").textContent = `${rate} · ${optTrade(top)}${insured}`;
+  const lump = `Your <b>${money(state.amount)}</b>`;
+  const ending = top.monthlyTo
+    ? `With your ${money(state.monthly)} a month going in ${esc(top.monthlyTo)} savings next to it, you'll have <b>${money(top.final)}</b> in ${yrsText(yrs)}`
+    : `You'll have <b>${money(top.final)}</b> in ${yrsText(yrs)}`;
+  if (top.kind === "cd") {
+    $("ansWhy").innerHTML = `${lump} should go in a ${term} CD at ${esc(top.name)}. It's locked in at ${top.apy.toFixed(2)}% a year. ${ending}`;
+    $("ansMeta").textContent = [top.min_deposit ? `${money(top.min_deposit)} minimum` : "No minimum",
+      /credit union/i.test(top.name) ? "NCUA insured" : "FDIC insured", `locked until ${lockedUntil(top.term_months)}, penalty if you pull it out early`].join(" · ");
+  } else if (top.kind === "treasury") {
+    $("ansWhy").innerHTML = `${lump} should go in a ${term} Treasury. It pays about ${top.apy.toFixed(2)}% a year, locked in. ${ending}`;
+    $("ansMeta").textContent = "Backed by the U.S. government · no state income tax · you can sell early at market price";
+  } else {
+    $("ansWhy").innerHTML = `${whoseMoney()} should go in ${esc(top.name)}. It pays ${ratePhrase(top.bank)}, so you'll have <b>${money(top.final)}</b> in ${yrsText(yrs)}`;
+    $("ansMeta").textContent = `${toOpen(top.bank)} · FDIC insured · the rate can change anytime`;
+  }
   $("ansCta").innerHTML = (top.kind === "savings" ? badge(top.bank) : "") + optLink(top);
-
-  const fb = $("fallback");
-  fb.hidden = !top.monthlyTo;
-  if (top.monthlyTo) fb.innerHTML = `Your <b>${money(state.monthly)}/mo</b> can't go into a ${top.kind === "cd" ? "CD" : "Treasury"}, so it's counted in <b>${esc(top.monthlyTo)}</b> savings alongside it.`;
+  $("fallback").hidden = true;
 
   // why not savings: the trade-off in one line
   const bestSavings = plan.options.find((o) => o.kind === "savings");
   const tr = $("treasury");
   tr.hidden = top.kind === "savings" || !bestSavings;
-  if (!tr.hidden) tr.innerHTML = `That's <b>${money(top.final - bestSavings.final)}</b> more than ${esc(bestSavings.name)} savings, if today's savings rate held. Savings rates can drop; this one is locked.`;
+  if (!tr.hidden) tr.innerHTML = `That's <b>${money(top.final - bestSavings.final)}</b> more than ${esc(bestSavings.name)} savings, and savings rates can drop while this one can't`;
 }
 
 function render() {
@@ -256,16 +275,16 @@ function render() {
     topSeries = projectBank(bank, { principal: amount, monthly, years });
     display = { name: bank.name, apy: bank.apy };
     $("ansH").innerHTML = `Put it in <em>${esc(bank.name)}</em>`;
-    $("ansWhy").textContent =
-      `${rateLabel(bank)} APY · ${toOpen(bank)} · FDIC insured · earns ${money(firstYearEarned(bank))} in year one`;
+    $("ansWhy").innerHTML = `${whoseMoney()} should go in ${esc(bank.name)}. It pays ${ratePhrase(bank)}, so you'll have <b>${money(topSeries.at(-1))}</b> in ${yrsText(years)}`;
+    $("ansMeta").textContent = `${toOpen(bank)} · FDIC insured · ${money(firstYearEarned(bank))} in interest the first year`;
     $("ansCta").innerHTML = badge(bank) + openLink(bank);
     const fb = $("fallback");
     fb.hidden = !(fallback && neededFor);
-    if (!fb.hidden) fb.innerHTML = `Most top rates need <b>${money(neededFor)}+</b> to earn their APY.`;
+    if (!fb.hidden) fb.innerHTML = `Most top rates need <b>${money(neededFor)}+</b> to earn their full rate`;
     const edge = d.treasury_1y ? treasuryEdge(bank, d.treasury_1y.rate, amount) : null;
     const tr = $("treasury");
     tr.hidden = !edge;
-    if (edge) tr.innerHTML = `Won't need it for a year? A 1-year Treasury pays <b>${edge.rate.toFixed(2)}%</b>, about <b>${money(edge.extra)}</b> more.`;
+    if (edge) tr.innerHTML = `Won't touch it for a year? A 1-year Treasury pays <b>${edge.rate.toFixed(2)}%</b>, about <b>${money(edge.extra)}</b> more`;
     $("listHead").textContent = "Other great options · first year";
     listRows = ranked.slice(1, 5).map((b) => `
       <div class="row">
@@ -441,7 +460,9 @@ function renderTrend(d) {
   const L = t.leaders;
   const fedAt = (iso) => { let r = null; for (const f of t.fed_funds) if (f.date <= iso) r = f.rate; return r ?? t.fed_funds[0]?.rate ?? null; };
   const fed = L.map((l) => fedAt(l.week));
-  const W = 680, H = 220, Lm = 48, R = 10, T = 10, B = 24;
+  // draw at roughly the on-screen width so labels stay readable on phones and wide screens
+  const W = Math.round(Math.min(1100, Math.max(320, innerWidth - 120))), H = 240, Lm = 48, R = 10, T = 10, B = 24;
+  $("trend").setAttribute("viewBox", `0 0 ${W} ${H}`);
   const weekOf = (iso) => { const dt = new Date(iso + "T00:00:00"); dt.setDate(dt.getDate() - ((dt.getDay() + 6) % 7)); return dt.toISOString().slice(0, 10); };
   const flags = (t.flags || []).map((f) => ({ ...f, i: L.findIndex((l) => l.week === weekOf(f.date)) })).filter((f) => f.i >= 0);
   const vals = L.map((l) => l.apy).concat(fed.filter((v) => v != null), flags.map((f) => f.apy));

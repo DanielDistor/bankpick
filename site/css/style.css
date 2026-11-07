@@ -50,7 +50,7 @@ a{color:inherit}
 
 /* 3. dashboard */
 #dash{justify-content:center}
-.col{width:100%;max-width:720px;padding:8px 0 60px}
+.col{width:100%;max-width:1160px;padding:8px 0 60px}
 .bar-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:13px}
 .pills{display:flex;gap:8px;flex-wrap:wrap}
 .amt{display:inline-flex;align-items:baseline;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:8px 16px;cursor:text}
@@ -64,7 +64,9 @@ a{color:inherit}
 .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
 .answer h2{font-size:44px;font-weight:800;letter-spacing:-.035em;margin-top:10px;line-height:1.05}
 .answer h2 em{font-style:normal;color:var(--green)}
-.answer .why{color:var(--muted);margin-top:12px;font-size:15px;line-height:1.55}
+.answer .why{color:var(--text);margin-top:14px;font-size:20px;line-height:1.5;max-width:820px;font-weight:500}
+.answer .why b{color:var(--green);font-weight:700}
+.answer .meta{color:var(--muted);margin-top:8px;font-size:14px;line-height:1.5}
 .cta{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px}
 .cta:empty{display:none}
 .badge{display:inline-block;font-size:12px;font-weight:600;color:var(--green);background:#0f2117;border:1px solid #17402a;border-radius:999px;padding:4px 10px;white-space:nowrap}
@@ -224,3 +226,13 @@ a{color:inherit}
 .restart{background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:7px 14px;font:600 13px Inter,sans-serif;cursor:pointer;transition:color .15s,border-color .15s}
 .restart:hover{color:var(--green);border-color:var(--green-2)}
 .restart:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+
+/* wide layout: pairs of cards side by side */
+.pair{margin-top:20px;display:grid;gap:20px;align-items:start}
+.pair > *, .pair .growth, .pair .list{margin-top:0}
+@media (min-width:960px){
+  .pair{grid-template-columns:1fr 1fr}
+  .pair.main-side{grid-template-columns:2fr 1fr}
+  .pair.main-side:has(#briefCard[hidden]){grid-template-columns:1fr}
+}
+.pair .card{margin-top:0}
