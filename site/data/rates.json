@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-11-05",
+  "as_of": "2026-11-07",
   "fed_funds": {
     "rate": 3.88,
     "as_of": "2026-10-01"
@@ -142,22 +142,22 @@
     {
       "name": "JPMorgan Chase",
       "apy": 0.01,
-      "as_of": "2026-11-06"
+      "as_of": "2026-11-07"
     },
     {
       "name": "Bank of America",
       "apy": 0.04,
-      "as_of": "2026-11-06"
+      "as_of": "2026-11-07"
     },
     {
       "name": "Citibank",
       "apy": 0.05,
-      "as_of": "2026-11-06"
+      "as_of": "2026-11-07"
     },
     {
       "name": "Wells Fargo",
       "apy": 0.01,
-      "as_of": "2026-11-06"
+      "as_of": "2026-11-07"
     }
   ],
   "trend": {
@@ -485,12 +485,12 @@
     ]
   },
   "health": {
-    "generated_at": "2026-11-07T03:50:49Z",
+    "generated_at": "2026-11-07T03:52:52Z",
     "checks": [
       {
         "name": "Rates are fresh",
         "ok": true,
-        "detail": "Bankrate rates as of 2026-11-05"
+        "detail": "Bankrate rates as of 2026-11-07"
       },
       {
         "name": "Banks parsed",
@@ -515,17 +515,22 @@
       {
         "name": "Big-bank rates are fresh",
         "ok": true,
-        "detail": "as of 2026-11-06"
+        "detail": "as of 2026-11-07"
       },
       {
         "name": "dbt tests",
         "ok": true,
-        "detail": "39 of 39 passed"
+        "detail": "46 of 46 passed"
       }
     ],
     "history_weeks": 52
   },
   "brief": [
+    {
+      "date": "2026-11-07",
+      "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",
+      "items": []
+    },
     {
       "date": "2026-11-06",
       "headline": "Peak Bank is #1 at 4.27%.",

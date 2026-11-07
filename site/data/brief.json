@@ -1,7 +1,7 @@
 {
   "state": {
     "last": {
-      "date": "2026-11-06",
+      "date": "2026-11-07",
       "data": {
         "banks": [
           {
@@ -83,9 +83,96 @@
         }
       }
     },
-    "prev": null
+    "prev": {
+      "date": "2026-11-06",
+      "data": {
+        "banks": [
+          {
+            "name": "Peak Bank",
+            "apy": 4.27,
+            "promo": null
+          },
+          {
+            "name": "EverBank",
+            "apy": 4.2,
+            "promo": null
+          },
+          {
+            "name": "Happen Bank",
+            "apy": 4.2,
+            "promo": null
+          },
+          {
+            "name": "Western State Bank",
+            "apy": 4.2,
+            "promo": null
+          },
+          {
+            "name": "Accordia Bank",
+            "apy": 4.1,
+            "promo": null
+          },
+          {
+            "name": "Bread Savings",
+            "apy": 4.05,
+            "promo": null
+          },
+          {
+            "name": "Vio Bank",
+            "apy": 4.01,
+            "promo": {
+              "apy": 4.25,
+              "months": 3,
+              "expires": null
+            }
+          },
+          {
+            "name": "Live Oak Bank",
+            "apy": 4.0,
+            "promo": null
+          },
+          {
+            "name": "TAB Bank",
+            "apy": 3.95,
+            "promo": null
+          },
+          {
+            "name": "Bask Bank",
+            "apy": 3.9,
+            "promo": null
+          },
+          {
+            "name": "Popular Direct",
+            "apy": 3.9,
+            "promo": null
+          },
+          {
+            "name": "CIT Bank",
+            "apy": 3.75,
+            "promo": {
+              "apy": 4.35,
+              "months": 6,
+              "expires": "2026-12-15"
+            }
+          }
+        ],
+        "fed_funds": {
+          "rate": 3.88,
+          "as_of": "2026-10-01"
+        },
+        "treasury_1y": {
+          "rate": 4.46,
+          "as_of": "2026-10-01"
+        }
+      }
+    }
   },
   "log": [
+    {
+      "date": "2026-11-07",
+      "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",
+      "items": []
+    },
     {
       "date": "2026-11-06",
       "headline": "Peak Bank is #1 at 4.27%.",
