@@ -113,22 +113,6 @@ export function rateLabel(bank) {
   return `${bank.promo.apy.toFixed(2)}% for ${m} month${m === 1 ? "" : "s"}, then ${base}`;
 }
 
-/**
- * The loading "showdown": the big banks get crossed out, then the next four
- * ranked banks (weakest first), then the winner gets the check.
- * Uses rankBanks, so the winner is always the dashboard's answer.
- */
-export function showdown(banks, bigBanks, { principal, monthly = 0, years }) {
-  const opts = { principal, monthly, years };
-  const { ranked } = rankBanks(banks, opts);
-  return {
-    big: bigBanks.map((b) => ({ name: b.name, apy: b.apy,
-      final: project({ principal, monthly, apy: b.apy, promo: null, years }).at(-1) })),
-    rivals: ranked.slice(1, 5).reverse(),
-    winner: ranked[0],
-  };
-}
-
 /** From weekly leaders: weeks each bank held #1 (most first), times #1 changed, current #1. */
 export function leaderStats(leaders) {
   const counts = new Map();

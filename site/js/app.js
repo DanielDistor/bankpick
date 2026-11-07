@@ -1,5 +1,5 @@
 import {
-  project, projectBank, rankBanks, fdicSplit, treasuryEdge, parseShareParams, buildShareQuery, rateLabel, showdown, leaderStats, planOptions,
+  project, projectBank, rankBanks, fdicSplit, treasuryEdge, parseShareParams, buildShareQuery, rateLabel, leaderStats, planOptions,
   FDIC_LIMIT, MAX_AMOUNT, MAX_MONTHLY,
 } from "./calc.js";
 
@@ -70,7 +70,6 @@ async function start() {
   if (!d) return;
   history.replaceState(null, "", buildShareQuery(state));
   await playLoading(d);
-  await playShowdown(d);
   openDashboard();
 }
 
@@ -117,59 +116,6 @@ async function playLoading(d) {
   steps[2].className = "step done";
   $("r3").textContent = "✓";
   await wait(900);
-}
-
-// ---------- 2b. showdown ----------
-const MARK_X = '<path d="M8 8 L20 20 M20 8 L8 20"/>';
-const MARK_OK = '<path d="M6 15 L12 21 L22 8"/>';
-
-function elCard(b) {
-  const el = document.createElement("div");
-  el.className = "el-card";
-  el.innerHTML = `<div class="n">${esc(b.name)}<small>${money(b.final)}</small></div>
-    <div class="r mono">${b.apy.toFixed(2)}%</div><svg class="el-mark" viewBox="0 0 28 28" aria-hidden="true"></svg>`;
-  $("elCards").appendChild(el);
-  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add("in")));
-  return el;
-}
-
-async function elRound(title, list) {
-  if (!list.length) return;
-  $("elHead").textContent = title;
-  const els = [];
-  for (const b of list) { els.push(elCard(b)); await wait(200); }
-  await wait(450);
-  for (const el of els) {
-    el.querySelector(".el-mark").innerHTML = MARK_X;
-    el.classList.add("x");
-    await wait(300);
-  }
-  await wait(400);
-  els.forEach((el) => el.classList.add("gone"));
-  await wait(380);
-  $("elCards").innerHTML = "";
-}
-
-async function playShowdown(d) {
-  const years = state.need ? state.need / 12 : 10;
-  const s = showdown(d.banks, d.big_banks, { principal: state.amount, monthly: state.monthly, years });
-  if (state.need) {
-    const { options } = planOptions(d, { principal: state.amount, monthly: state.monthly, months: state.need });
-    const named = options.map((o) => ({ ...o, name: o.kind === "cd" ? `${o.name} CD` : o.name }));
-    s.winner = named[0];
-    s.rivals = named.slice(1, 5).reverse();
-  }
-  const withFinal = (b) => ({ ...b, final: b.final ?? projectBank(b, { principal: state.amount, monthly: state.monthly, years }).at(-1) });
-  $("elCards").innerHTML = "";
-  $("elColBank").textContent = `Bank · your money in ${years} yrs`;
-  show("elim");
-  await elRound(state.need ? "Comparing savings, CDs and Treasuries" : "Comparing the top savings accounts", s.rivals.map(withFinal));
-  $("elHead").textContent = "Your best option";
-  const w = elCard(withFinal(s.winner));
-  await wait(450);
-  w.querySelector(".el-mark").innerHTML = MARK_OK;
-  w.classList.add("win");
-  await wait(1100);
 }
 
 // ---------- 3. dashboard ----------
