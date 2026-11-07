@@ -126,15 +126,12 @@ function openDashboard() {
   dashMonthly.value = state.monthly.toLocaleString("en-US");
   dashNeed.value = String(state.need);
   $("asOf").textContent = `Rates as of ${fmtDate(state.data.as_of)}`;
-  renderTrend(state.data);
+  show("dash"); // charts measure their panel, so the screen must be visible first
   renderLeaders(state.data);
   renderBrief(state.data);
   renderHealth(state.data);
-  state.animate = true;
   render();
-  state.animate = false;
-  show("dash");
-  document.querySelector("#dash .col").classList.add("fade");
+  document.querySelector("#dash .wrap").classList.add("fade");
 }
 
 function onDashEdit() {
@@ -149,12 +146,16 @@ function onDashEdit() {
   render();
 }
 dashInput.addEventListener("input", onDashEdit);
+dashMonthly.addEventListener("input", onDashEdit);
 dashNeed.addEventListener("change", onDashEdit);
+
 let resizeTimer;
 addEventListener("resize", () => {
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => { if (state.data && $("dash").classList.contains("on")) renderTrend(state.data); }, 150);
+  resizeTimer = setTimeout(() => { if (state.data && $("dash").classList.contains("on")) render(); }, 150);
 });
+
+$("allBtn").addEventListener("click", () => { state.showAll = !state.showAll; renderAllToggle(); });
 
 // Back to the question, keeping what they typed; drops the share query so a refresh starts fresh too.
 $("restart").addEventListener("click", () => {
@@ -167,163 +168,172 @@ $("restart").addEventListener("click", () => {
   window.scrollTo(0, 0);
   askInput.focus();
 });
-dashMonthly.addEventListener("input", onDashEdit);
 
-const toOpen = (b) => {
-  const open = b.min_opening ? `${money(b.min_opening)} to open` : "No minimum to open";
-  const parts = [open];
-  if (b.min_balance_for_apy > b.min_opening) parts.push(`${money(b.min_balance_for_apy)} for APY`);
-  if (b.min_monthly_deposit > 0) parts.push(`needs ${money(b.min_monthly_deposit)}/mo deposits`);
-  return parts.join(" · ");
-};
-
-// ---------- plain-English answer ----------
+// ---------- formatting ----------
+const pct = (n) => n.toFixed(2) + "%";
+const signed = (n) => (Math.round(n) >= 0 ? "+" : "−") + money(Math.abs(n));
 const yrsText = (y) => `${y} year${y === 1 ? "" : "s"}`;
-const ratePhrase = (b) => b.promo
-  ? `${b.promo.apy.toFixed(2)}% for ${b.promo.months} month${b.promo.months === 1 ? "" : "s"}, then ${b.apy.toFixed(2)}% a year`
-  : `${b.apy.toFixed(2)}% a year`;
-
-// ---------- options for a fixed timeline ----------
-const optName = (o) => (o.kind === "cd" ? `${o.name} CD` : o.name);
 const lockedUntil = (months) => {
   const dt = new Date(); dt.setMonth(dt.getMonth() + months);
   return dt.toLocaleDateString("en-US", { month: "short", year: "numeric" });
 };
+const PRODUCT = { savings: "Savings", cd: "CD", treasury: "Treasury" };
+const insurer = (o) => o.kind === "treasury" ? "Backed by the U.S. government"
+  : /credit union/i.test(o.name) ? "NCUA insured" : "FDIC insured";
 
-function answerForPlan(top) {
-  const yrs = state.need / 12;
-  const lump = `Your ${money(state.amount)} should go in`;
-  const withMonthly = top.monthlyTo ? ` with your ${money(state.monthly)} a month in ${esc(top.monthlyTo)} savings` : "";
-  const have = `you'll have <b>${money(top.final)}</b> in ${yrsText(yrs)}`;
-  if (top.kind === "cd") {
-    $("ansH").innerHTML = `${lump} a <em>${yrs}-year CD</em> at ${esc(top.name)}`;
-    $("ansWhy").innerHTML = `It's locked in at ${top.apy.toFixed(2)}% a year, so ${have}${withMonthly}`;
-    $("ansMeta").textContent = [top.min_deposit ? `${money(top.min_deposit)} minimum` : "No minimum",
-      /credit union/i.test(top.name) ? "NCUA insured" : "FDIC insured", `locked until ${lockedUntil(top.term_months)}`].join(" · ");
-  } else if (top.kind === "treasury") {
-    $("ansH").innerHTML = `${lump} a <em>${yrs}-year Treasury</em>`;
-    $("ansWhy").innerHTML = `It pays about ${top.apy.toFixed(2)}% a year, locked in, so ${have}${withMonthly}`;
-    $("ansMeta").textContent = `Backed by the U.S. government · locked until ${lockedUntil(top.term_months)}`;
-  } else {
-    answerForSavings(top.bank, top.final, yrs);
+/** Every option for the current inputs, ranked, in one shape. */
+function buildOptions(d) {
+  const { amount, monthly, need } = state;
+  const years = need ? need / 12 : state.years;
+  if (need) {
+    const { options } = planOptions(d, { principal: amount, monthly, months: need });
+    return { years, fallback: null, rows: options.map((o) => ({
+      kind: o.kind, name: o.name, apy: o.apy, promo: o.bank?.promo || null,
+      min: o.kind === "savings" ? Math.max(o.bank.min_opening || 0, o.bank.min_balance_for_apy || 0) : (o.min_deposit || 0),
+      liq: o.kind === "savings" ? "Anytime" : `Locked to ${lockedUntil(need)}`,
+      final: o.final, series: o.series, monthlyTo: o.monthlyTo,
+    })) };
   }
-  $("fallback").hidden = true;
-}
-
-function answerForSavings(bank, final, yrs) {
-  const adds = state.monthly > 0 ? ` with ${money(state.monthly)} a month` : "";
-  $("ansH").innerHTML = `Your ${money(state.amount)} should go in <em>${esc(bank.name)}</em>`;
-  $("ansWhy").innerHTML = `It pays ${ratePhrase(bank)}, so${adds} you'll have <b>${money(final)}</b> in ${yrsText(yrs)}`;
-  $("ansMeta").textContent = `${toOpen(bank)} · FDIC insured`;
-}
-
-function nextRow(rank, name, kind, apy, final, topFinal) {
-  const gap = Math.round(topFinal - final);
-  return `
-    <div class="row">
-      <div class="rk mono">#${rank}</div>
-      <div class="n">${esc(name)}${kind ? `<span class="kind">${kind}</span>` : ""}</div>
-      <div class="a mono">${apy.toFixed(2)}%</div>
-      <div class="e mono">${money(final)}<small>${gap > 0 ? `${money(gap)} less` : "same"}</small></div>
-    </div>`;
+  const { ranked, fallback, neededFor } = rankBanks(d.banks, { principal: amount, monthly, years });
+  return { years, fallback: fallback ? neededFor : null, rows: ranked.map((b) => {
+    const series = projectBank(b, { principal: amount, monthly, years });
+    return { kind: "savings", name: b.name, apy: b.apy, promo: b.promo,
+      min: Math.max(b.min_opening || 0, b.min_balance_for_apy || 0), minMonthly: b.min_monthly_deposit || 0,
+      liq: "Anytime", final: series.at(-1), series };
+  }) };
 }
 
 function render() {
   const d = state.data;
   const { amount, monthly, need } = state;
-  const years = need ? need / 12 : state.years;
+  const { years, rows, fallback } = buildOptions(d);
+  const top = rows[0];
   const chase = comparisonBank(d);
-  let top, topSeries, listRows, fdicPool, display;
+  const chaseSeries = chase ? project({ principal: amount, monthly, apy: chase.apy, promo: null, years }) : null;
+  const chaseFinal = chaseSeries ? chaseSeries.at(-1) : null;
+  const deposited = amount + monthly * years * 12;
+  const fed = d.fed_funds?.rate;
 
-  if (need) {
-    const plan = planOptions(d, { principal: amount, monthly, months: need });
-    top = plan.top;
-    topSeries = top.series;
-    display = { name: optName(top), apy: top.apy };
-    answerForPlan(top);
-    listRows = plan.options.slice(1, 4).map((o, i) => nextRow(i + 2, optName(o), o.kind === "savings" ? "Savings" : null, o.apy, o.final, top.final));
-    fdicPool = top.kind === "treasury" ? null : plan.options.filter((o) => o.kind === top.kind);
-  } else {
-    const { ranked, fallback, neededFor } = rankBanks(d.banks, { principal: amount, monthly, years });
-    const bank = ranked[0];
-    top = bank;
-    topSeries = projectBank(bank, { principal: amount, monthly, years });
-    display = { name: bank.name, apy: bank.apy };
-    answerForSavings(bank, topSeries.at(-1), years);
-    const fb = $("fallback");
-    fb.hidden = !(fallback && neededFor);
-    if (!fb.hidden) fb.innerHTML = `Most top rates need <b>${money(neededFor)}+</b> to earn their full rate`;
-    listRows = ranked.slice(1, 4).map((b, i) => {
-      const fin = projectBank(b, { principal: amount, monthly, years }).at(-1);
-      return nextRow(i + 2, b.name, null, b.apy, fin, topSeries.at(-1));
-    });
-    fdicPool = ranked;
+  // #1
+  $("pickKind").textContent = `${PRODUCT[top.kind]} · ${top.liq}`;
+  $("pickName").textContent = top.kind === "cd" ? `${top.name} · ${need / 12}-year CD` : top.name;
+  const stats = [
+    ["APY", pct(top.apy), "", top.promo ? `${pct(top.promo.apy)} for ${top.promo.months} mo first` : fed != null ? `${Math.round((top.apy - fed) * 100)} bps over Fed funds` : ""],
+    [`Value in ${years} yrs`, money(top.final), "g", `${money(deposited)} deposited`],
+    ["Interest earned", money(top.final - deposited), "", `over ${yrsText(years)}`],
+    chase && ["vs Chase", signed(top.final - chaseFinal), "g", `Chase pays ${pct(chase.apy)}`],
+  ].filter(Boolean);
+  $("pickStats").innerHTML = stats.map(([k, v, cls, sub]) =>
+    `<div><div class="k">${k}</div><div class="v ${cls}">${v}</div><div class="s">${esc(sub)}</div></div>`).join("");
+  const foot = [`${top.min ? money(top.min) + " minimum" : "No minimum"} · ${insurer(top)}`
+    + (top.minMonthly ? ` · needs ${money(top.minMonthly)}/mo deposits` : "")];
+  if (top.monthlyTo) foot.push(`Your <b>${money(monthly)}/mo</b> goes to <b>${esc(top.monthlyTo)}</b> savings next to it, included above`);
+  if (fallback) foot.push(`Most top rates need <b>${money(fallback)}+</b> to earn their full rate`);
+  if (amount > FDIC_LIMIT && top.kind !== "treasury") {
+    const pool = rows.filter((r) => r.kind === top.kind);
+    const { parts, uninsured } = fdicSplit(amount, pool.map((r) => ({ name: r.name })));
+    foot.push(`Over the ${money(FDIC_LIMIT)} insurance limit, split it: ${parts.map((x) => `<b>${money(x.amount)}</b> ${esc(x.name)}`).join(", ")}`
+      + (uninsured > 0 ? `, <b>${money(uninsured)}</b> uninsured` : ""));
   }
+  $("pickFoot").innerHTML = foot.map((f) => `<div>${f}</div>`).join("");
 
-  // growth card (a fixed timeline sets the horizon, so the tabs hide)
+  // #2-#4 and the full list
+  $("runHead").textContent = `value in ${years} yrs`;
+  $("runRows").innerHTML = rows.slice(1, 4).map((r, k) => `<tr>
+    <td class="num dim">${k + 2}</td><td class="inst">${esc(r.name)}</td><td class="dim c-prod">${PRODUCT[r.kind]}</td>
+    <td class="num">${pct(r.apy)}</td><td class="num">${money(r.final)}</td><td class="num dim">${signed(r.final - top.final)}</td></tr>`).join("")
+    || `<tr><td colspan="6" class="dim">No other options for this amount</td></tr>`;
+  const refs = d.big_banks.map((b) => ({ name: b.name, apy: b.apy,
+    final: project({ principal: amount, monthly, apy: b.apy, promo: null, years }).at(-1) }));
+  $("allHead").textContent = `All options · value in ${years} yrs`;
+  $("allRows").innerHTML = rows.map((r, k) => `<tr class="${k === 0 ? "hi" : ""}">
+    <td class="num dim">${k + 1}</td><td class="inst">${esc(r.name)}</td><td class="dim c-prod">${PRODUCT[r.kind]}</td>
+    <td class="num">${pct(r.apy)}</td><td class="num dim c-min">${r.min ? money(r.min) : "—"}</td><td class="dim c-liq">${esc(r.liq)}</td>
+    <td class="num">${money(r.final)}</td><td class="num dim c-gap">${k === 0 ? "—" : signed(r.final - top.final)}</td></tr>`).join("")
+    + `<tr class="sep"><td colspan="8"></td></tr>`
+    + refs.map((r) => `<tr class="ref"><td></td><td class="inst">${esc(r.name)}</td><td class="c-prod">Savings</td>
+      <td class="num">${pct(r.apy)}</td><td class="num c-min">—</td><td class="c-liq">Anytime</td>
+      <td class="num">${money(r.final)}</td><td class="num gap c-gap">${signed(r.final - top.final)}</td></tr>`).join("");
+  state.optionCount = rows.length;
+  renderAllToggle();
+
+  // growth
+  const topLabel = top.kind === "cd" ? `${top.name} CD` : top.name;
+  $("gTitle").textContent = `Growth · ${topLabel} vs Chase`;
+  $("gGap").innerHTML = chase ? `gap in ${years} yrs <b>${signed(top.final - chaseFinal)}</b>` : "";
+  $("gLegend").innerHTML = `<span><i style="border-color:#22e07a"></i>${esc(topLabel)}</span>`
+    + (chase ? `<span><i style="border-color:#e05252"></i>${esc(chase.name)}</span>` : "");
+  const n = top.series.length - 1;
+  const xLabel = (i) => { const m = years * 12 * i / n; return m === 0 ? "Today" : `${+(m / 12).toFixed(1)} yr`; };
+  const g = drawLines($("chart"), {
+    series: [...(chaseSeries ? [{ values: chaseSeries, color: "#e05252", width: 1.6 }] : []), { values: top.series, color: "#22e07a", width: 2.4, fill: true }],
+    yFmt: (v) => v >= 1e6 ? "$" + +(v / 1e6).toFixed(2) + "M" : "$" + +(v / 1000).toFixed(1) + "k",
+    xTicks: [[0, "Today"], [n / 2, xLabel(n / 2)], [n, xLabel(n)]],
+  });
+  attachTip($("chart"), $("gTip"), n, (i) => {
+    const m = years * 12 * i / n;
+    const label = m === 0 ? "Today" : m < 12 ? `Month ${Math.round(m)}` : `Year ${+(m / 12).toFixed(1)}`;
+    return tipHtml(label, [["#22e07a", topLabel, money(top.series[i])], ...(chaseSeries ? [["#e05252", chase.name, money(chaseSeries[i])]] : [])]);
+  }, g);
   $("tabs").hidden = Boolean(need);
   $("tabs").innerHTML = HORIZONS.map((y) =>
     `<button class="tab ${y === years ? "on" : ""}" data-y="${y}" aria-pressed="${y === years}">${y} yr</button>`).join("");
   $("tabs").querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => { state.years = Number(t.dataset.y); render(); }));
 
-  const chaseSeries = chase ? project({ principal: amount, monthly, apy: chase.apy, promo: null, years }) : null;
-  const end = topSeries.at(-1);
-  const deposited = amount + monthly * years * 12;
-  $("gBig").textContent = money(end);
-  $("gCap").textContent = `in ${years} year${years > 1 ? "s" : ""} · +${money(end - deposited)} earned`;
-  $("gVsLabel").textContent = chase ? `At ${chase.name.replace("JPMorgan ", "")} instead` : "";
-  $("gVs").textContent = chaseSeries ? money(chaseSeries.at(-1)) : "";
-  drawChart(topSeries, chaseSeries, years);
-  $("gLegend").innerHTML = `<span><i style="border-color:#22e07a"></i>${esc(display.name)}</span>`
-    + (chase ? `<span><i style="border-color:#e05252"></i>${esc(chase.name)}</span>` : "");
-  attachTip($("chart"), $("gTip"), topSeries.length - 1, (i) => {
-    const m = years * 12 * i / (topSeries.length - 1);
-    const label = m === 0 ? "Today" : m < 12 ? `Month ${Math.round(m)}` : `Year ${(m / 12).toFixed(m % 12 ? 1 : 0)}`;
-    return tipHtml(label, [["#22e07a", display.name, money(topSeries[i])], ...(chase ? [["#e05252", chase.name, money(chaseSeries[i])]] : [])]);
-  });
-
-  renderBigBars(display, d, end, years);
-
-  $("listHead").textContent = `Next best options · what you'd have in ${yrsText(years)}`;
-  $("rows").innerHTML = listRows.join("");
-
-  // FDIC
-  const note = $("note");
-  note.hidden = amount <= FDIC_LIMIT;
-  if (!note.hidden && !fdicPool) {
-    note.innerHTML = `<b>Good to know:</b> Treasuries are backed by the U.S. government, so the ${money(FDIC_LIMIT)} FDIC limit doesn't apply.`;
-  } else if (!note.hidden) {
-    const { parts, uninsured } = fdicSplit(amount, fdicPool.map((o) => ({ name: need ? optName(o) : o.name })));
-    const list = parts.map((p) => `<b>${money(p.amount)}</b> at ${esc(p.name)}`).join(", ");
-    note.innerHTML = `<b>Tip:</b> the FDIC insures up to ${money(FDIC_LIMIT)} per bank. To keep your money protected, split it: ${list}.`
-      + (uninsured > 0 ? ` <b>${money(uninsured)}</b> would be over the insured limit.` : "");
-  }
+  renderTrend(d);
 }
 
-function drawChart(top, chase, years) {
-  const W = 680, H = 200, L = 4, R = 10, T = 10, B = 24;
-  const all = chase ? top.concat(chase) : top;
-  const yMin = Math.min(...all) * 0.995, yMax = Math.max(...all) * 1.01;
-  const n = top.length - 1;
-  const x = (i) => L + (W - L - R) * i / n;
-  const y = (v) => T + (H - T - B) * (1 - (v - yMin) / ((yMax - yMin) || 1));
-  const path = (s) => s.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join("");
-  const topPath = path(top);
-  const ticks = [0, n / 2, n].map((i) => {
-    const t = years * i / n;
-    const label = i === 0 ? "Today" : `${Number.isInteger(t) ? t : t.toFixed(1)} yr`;
-    const anchor = i === 0 ? "start" : i === n ? "end" : "middle";
-    return `<text x="${x(i)}" y="${H - 4}" fill="#56625a" font-size="12" text-anchor="${anchor}" font-family="JetBrains Mono, monospace">${label}</text>`;
-  }).join("");
-  $("chart").innerHTML = `<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22e07a" stop-opacity=".25"/><stop offset="1" stop-color="#22e07a" stop-opacity="0"/></linearGradient></defs>
-    <path d="${topPath}L${x(n)},${H - B}L${x(0)},${H - B}Z" fill="url(#g)"/>
-    ${chase ? `<path d="${path(chase)}" stroke="#e05252" stroke-width="2" fill="none" stroke-linecap="round"/>` : ""}
-    <path class="${state.animate ? "draw" : ""}" pathLength="1" d="${topPath}" stroke="#22e07a" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="${x(n)}" cy="${y(top.at(-1))}" r="5" fill="#22e07a"/>${ticks}`;
+function renderAllToggle() {
+  $("allPanel").hidden = !state.showAll;
+  $("allBtn").setAttribute("aria-expanded", String(Boolean(state.showAll)));
+  $("allBtn").textContent = state.showAll ? "Hide full list ↑" : `See all ${state.optionCount} options ↓`;
 }
 
-// ---------- dashboard extras ----------
+// ---------- charts ----------
 const SVGNS = "http://www.w3.org/2000/svg";
+
+/** Round axis steps (1, 2, 2.5 or 5 × 10^k) so labels read 4.00%, 4.25%... or $30k, $35k... */
+function niceTicks(lo, hi, target = 4) {
+  if (hi === lo) { hi += Math.abs(hi) * 0.01 || 1; lo -= Math.abs(lo) * 0.01 || 1; }
+  const raw = (hi - lo) / target, mag = 10 ** Math.floor(Math.log10(raw));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((st) => st >= raw);
+  const y0 = Math.floor(lo / step) * step, y1 = Math.ceil(hi / step) * step;
+  const ticks = [];
+  for (let v = y0; v <= y1 + step / 2; v += step) ticks.push(+v.toFixed(10));
+  return { ticks, y0, y1 };
+}
+
+/** Draws line series at the panel's real width so text stays 11px everywhere. Returns its margins. */
+function drawLines(svg, { series, yFmt, xTicks, markers = [], H = 240 }) {
+  const W = Math.max(280, Math.round(svg.parentElement.clientWidth || 600));
+  const L = 52, R = 12, T = 10, B = 24;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const all = series.flatMap((s) => s.values).concat(markers.map((m) => m.v)).filter((v) => v != null);
+  const { ticks: yTicks, y0, y1 } = niceTicks(Math.min(...all), Math.max(...all));
+  const n = series[0].values.length - 1;
+  const x = (i) => L + (W - L - R) * i / n;
+  const y = (v) => T + (H - T - B) * (1 - (v - y0) / (y1 - y0));
+  const grid = yTicks.map((v) => {
+    return `<line x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#161c18"/>`
+      + `<text class="ax" x="${L - 8}" y="${(y(v) + 4).toFixed(1)}" text-anchor="end">${yFmt(v)}</text>`;
+  }).join("");
+  const paths = series.map((s) => {
+    const d = s.values.map((v, i) => (s.step && i
+      ? `L${x(i).toFixed(1)},${y(s.values[i - 1]).toFixed(1)}L${x(i).toFixed(1)},${y(v).toFixed(1)}`
+      : `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`)).join("");
+    const area = s.fill ? `<path d="${d}L${x(n)},${H - B}L${x(0)},${H - B}Z" fill="url(#gfill)"/>` : "";
+    return area + `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${s.width || 2}" stroke-linejoin="round"/>`;
+  }).join("");
+  const last = series.at(-1);
+  const dot = `<circle cx="${x(n)}" cy="${y(last.values[n])}" r="3.5" fill="${last.color}"/>`;
+  const marks = markers.map((m) => `<circle cx="${x(m.i)}" cy="${y(m.v)}" r="4.5" fill="none" stroke="${m.color}" stroke-width="2"/>`
+    + `<text class="ax" x="${x(m.i) + 8}" y="${y(m.v) + 4}" style="fill:${m.color}">${esc(m.label)}</text>`).join("");
+  const ticks = xTicks.map(([i, t], k) =>
+    `<text class="ax" x="${x(i)}" y="${H - 6}" text-anchor="${k === 0 ? "start" : k === xTicks.length - 1 ? "end" : "middle"}">${esc(t)}</text>`).join("");
+  svg.innerHTML = `<defs><linearGradient id="gfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22e07a" stop-opacity=".18"/><stop offset="1" stop-color="#22e07a" stop-opacity="0"/></linearGradient></defs>`
+    + grid + paths + dot + marks + ticks;
+  return { L, R, T, B };
+}
 
 function tipHtml(label, rows) {
   return `<div class="d">${esc(label)}</div>` + rows.map(([c, name, v]) =>
@@ -331,17 +341,12 @@ function tipHtml(label, rows) {
 }
 
 /** Crosshair + tooltip that snaps to the nearest of n+1 evenly spaced points. */
-function attachTip(svg, tip, n, html, { L = 4, R = 10, T = 10 } = {}) {
+function attachTip(svg, tip, n, html, { L = 4, R = 10, T = 10, B = 24 } = {}) {
   const vb = svg.viewBox.baseVal;
-  let hair = svg.querySelector(".hair");
-  if (!hair) {
-    hair = document.createElementNS(SVGNS, "line");
-    hair.setAttribute("class", "hair");
-    hair.setAttribute("stroke", "#56625a");
-    hair.setAttribute("stroke-width", "1");
-    hair.setAttribute("visibility", "hidden");
-  }
-  hair.setAttribute("y1", T); hair.setAttribute("y2", vb.height - 24);
+  const hair = document.createElementNS(SVGNS, "line");
+  hair.setAttribute("stroke", "#5d6a62");
+  hair.setAttribute("visibility", "hidden");
+  hair.setAttribute("y1", T); hair.setAttribute("y2", vb.height - B);
   svg.appendChild(hair);
   svg.onpointermove = (e) => {
     const r = svg.getBoundingClientRect();
@@ -351,105 +356,54 @@ function attachTip(svg, tip, n, html, { L = 4, R = 10, T = 10 } = {}) {
     hair.setAttribute("x1", x); hair.setAttribute("x2", x); hair.setAttribute("visibility", "visible");
     tip.innerHTML = html(i);
     tip.hidden = false;
-    const px = (x / vb.width) * r.width;
-    const w = tip.offsetWidth;
+    const px = (x / vb.width) * r.width, w = tip.offsetWidth;
     tip.style.left = Math.max(0, Math.min(r.width - w, px + (px > r.width / 2 ? -w - 12 : 12))) + "px";
   };
   svg.onpointerleave = () => { tip.hidden = true; hair.setAttribute("visibility", "hidden"); };
 }
 
-function hbars(el, rows, max) {
-  el.innerHTML = rows.map((r) => `
-    <div class="hb ${r.hi ? "hi" : ""}" title="${esc(r.name)}: ${esc(r.label)}">
-      <div class="n">${esc(r.name)}</div>
-      <div class="track"><div class="fill" data-w="${(100 * r.value / max).toFixed(2)}"></div></div>
-      <div class="v">${esc(r.label)}${r.sub ? `<small>${esc(r.sub)}</small>` : ""}</div>
-    </div>`).join("");
-  requestAnimationFrame(() => requestAnimationFrame(() =>
-    el.querySelectorAll(".fill").forEach((f) => { f.style.width = f.dataset.w + "%"; })));
-}
-
-function renderBigBars(top, d, topFinal, years) {
-  const { amount, monthly } = state;
-  const rows = [{ name: top.name, value: topFinal, label: money(topFinal), sub: `${top.apy.toFixed(2)}% / yr`, hi: true }];
-  for (const b of d.big_banks) {
-    const v = project({ principal: amount, monthly, apy: b.apy, promo: null, years }).at(-1);
-    rows.push({ name: b.name.replace("JPMorgan ", ""), value: v, label: money(v), sub: `−${money(topFinal - v)}` });
-  }
-  hbars($("bigBars"), rows, Math.max(...rows.map((r) => r.value)));
-  const deposited = amount + monthly * years * 12;
-  $("bbSub").innerHTML = `What ${money(amount)}${monthly ? ` + ${money(monthly)}/mo` : ""} becomes in ${years} year${years > 1 ? "s" : ""}. `
-    + `You put in <b>${money(deposited)}</b>; the big banks pay almost nothing on top.`;
-}
-
 function renderTrend(d) {
   const t = d.trend;
-  const card = $("trend").closest(".card");
-  if (!t?.leaders?.length) { card.hidden = true; return; }
-  card.hidden = false;
+  $("trendCard").hidden = !t?.leaders?.length;
+  if (!t?.leaders?.length) return;
   const L = t.leaders;
   const fedAt = (iso) => { let r = null; for (const f of t.fed_funds) if (f.date <= iso) r = f.rate; return r ?? t.fed_funds[0]?.rate ?? null; };
   const fed = L.map((l) => fedAt(l.week));
-  // draw at roughly the on-screen width so labels stay readable on phones and wide screens
-  const W = Math.round(Math.min(1100, Math.max(320, innerWidth - 120))), H = 240, Lm = 48, R = 10, T = 10, B = 24;
-  $("trend").setAttribute("viewBox", `0 0 ${W} ${H}`);
   const weekOf = (iso) => { const dt = new Date(iso + "T00:00:00"); dt.setDate(dt.getDate() - ((dt.getDay() + 6) % 7)); return dt.toISOString().slice(0, 10); };
   const flags = (t.flags || []).map((f) => ({ ...f, i: L.findIndex((l) => l.week === weekOf(f.date)) })).filter((f) => f.i >= 0);
-  const vals = L.map((l) => l.apy).concat(fed.filter((v) => v != null), flags.map((f) => f.apy));
-  const yMin = Math.floor((Math.min(...vals) - 0.15) * 10) / 10, yMax = Math.ceil((Math.max(...vals) + 0.1) * 10) / 10;
-  const n = L.length - 1;
-  const x = (i) => Lm + (W - Lm - R) * i / n;
-  const y = (v) => T + (H - T - B) * (1 - (v - yMin) / (yMax - yMin));
-  const line = (arr) => arr.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join("");
-  const step = (arr) => arr.map((v, i) => i ? `L${x(i).toFixed(1)},${y(arr[i - 1]).toFixed(1)}L${x(i).toFixed(1)},${y(v).toFixed(1)}` : `M${x(0)},${y(v).toFixed(1)}`).join("");
-  const grid = [];
-  for (let g = Math.ceil(yMin * 4) / 4; g <= yMax; g += 0.25)
-    grid.push(`<line x1="${Lm}" x2="${W - R}" y1="${y(g)}" y2="${y(g)}" stroke="#1a211c"/><text x="0" y="${y(g) + 4}" fill="#56625a" font-size="11" text-anchor="start" font-family="JetBrains Mono, monospace">${g.toFixed(2)}%</text>`);
+  const n = L.length - 1, mid = Math.round(n / 2);
   const mon = (iso) => fmtDate(iso, { month: "short", year: "2-digit" });
-  const ticks = [0, Math.round(n / 2), n].map((i) =>
-    `<text x="${x(i)}" y="${H - 4}" fill="#56625a" font-size="12" text-anchor="${i === 0 ? "start" : i === n ? "end" : "middle"}" font-family="JetBrains Mono, monospace">${mon(L[i].week)}</text>`).join("");
-  $("trend").innerHTML = grid.join("")
-    + `<path d="${step(fed)}" stroke="#9aa7a0" stroke-width="2" fill="none"/>`
-    + `<path d="${line(L.map((l) => l.apy))}" stroke="#22e07a" stroke-width="2.5" fill="none" stroke-linejoin="round"/>`
-    + `<circle cx="${x(n)}" cy="${y(L[n].apy)}" r="4" fill="#22e07a"/>`
-    + flags.map((f) => `<circle cx="${x(f.i)}" cy="${y(f.apy)}" r="5" fill="none" stroke="#f0b429" stroke-width="2"/>`
-      + `<text x="${x(f.i) + 9}" y="${y(f.apy) + 4}" fill="#f0b429" font-size="11" font-family="Inter, sans-serif">! flagged</text>`).join("")
-    + ticks;
-  $("trLegend").innerHTML = `<span><i style="border-color:#22e07a"></i>Best online savings rate</span><span><i style="border-color:#9aa7a0"></i>Fed funds rate</span>`
-    + (flags.length ? `<span style="color:#f0b429">○ Flagged data point (left out)</span>` : "");
+  const g = drawLines($("trend"), {
+    series: [{ values: fed, color: "#9aa7a0", width: 1.6, step: true }, { values: L.map((l) => l.apy), color: "#22e07a", width: 2.2 }],
+    yFmt: (v) => v.toFixed(2) + "%",
+    xTicks: [[0, mon(L[0].week)], [mid, mon(L[mid].week)], [n, mon(L[n].week)]],
+    markers: flags.map((f) => ({ i: f.i, v: f.apy, color: "#f0b429", label: "flagged" })),
+  });
   attachTip($("trend"), $("trTip"), n, (i) => tipHtml(`Week of ${fmtDate(L[i].week)}`,
-    [["#22e07a", L[i].name, L[i].apy.toFixed(2) + "%"], ["#9aa7a0", "Fed funds rate", fed[i] == null ? "—" : fed[i].toFixed(2) + "%"],
-      ...flags.filter((f) => f.i === i).map((f) => ["#f0b429", `${f.bank} · flagged, left out`, f.apy.toFixed(2) + "%"])]), { L: Lm, R, T });
-  const chase = comparisonBank(d);
-  const spread = L[n].apy - (fed[n] ?? 0);
-  $("trSub").innerHTML = `The best online banks move with the Fed and pay <b>${spread >= 0 ? "above" : "below"}</b> it today (${L[n].apy.toFixed(2)}% vs ${(fed[n] ?? 0).toFixed(2)}%).`
-    + (chase ? ` ${esc(chase.name.replace("JPMorgan ", ""))} pays <b>${chase.apy.toFixed(2)}%</b>.` : "");
+    [["#22e07a", L[i].name, pct(L[i].apy)], ["#9aa7a0", "Fed funds", fed[i] == null ? "—" : pct(fed[i])],
+      ...flags.filter((f) => f.i === i).map((f) => ["#f0b429", `${f.bank} · flagged, left out`, pct(f.apy)])]), g);
+  $("trLegend").innerHTML = `<span><i style="border-color:#22e07a"></i>Best online savings</span><span><i style="border-color:#9aa7a0"></i>Fed funds</span>`
+    + (flags.length ? `<span class="flagkey">○ flagged point, left out</span>` : "");
+  $("trSpread").innerHTML = fed[n] != null ? `spread <b>${Math.round((L[n].apy - fed[n]) * 100)} bps</b>` : "";
 }
 
 function renderLeaders(d) {
   const t = d.trend;
-  const card = $("leaderBars").closest(".card");
-  if (!t?.leaders?.length) { card.hidden = true; return; }
+  $("leaderCard").hidden = !t?.leaders?.length;
+  if (!t?.leaders?.length) return;
   const st = leaderStats(t.leaders);
-  card.hidden = false;
-  hbars($("leaderBars"), st.weeks.map((w) => ({
-    name: w.name, value: w.weeks, label: `${w.weeks} wk${w.weeks === 1 ? "" : "s"}`, hi: w.name === st.current,
-  })), Math.max(...st.weeks.map((w) => w.weeks)));
-  $("ldSub").innerHTML = `The top spot changed hands <b>${st.changes} times</b> in ${t.leaders.length} weeks. `
-    + `That's why we re-check every day. Current #1: <b>${esc(st.current)}</b>.`;
+  const max = Math.max(...st.weeks.map((w) => w.weeks));
+  $("ldChanges").innerHTML = `#1 changed <b>${st.changes}×</b>`;
+  $("leaderBars").innerHTML = st.weeks.map((w) => `<div class="hb ${w.name === st.current ? "cur" : ""}">
+    <span class="n">${esc(w.name)}</span><div class="track"><div class="fill" style="width:${(100 * w.weeks / max).toFixed(1)}%"></div></div>
+    <span class="w num">${w.weeks} wk</span></div>`).join("");
 }
 
 function renderBrief(d) {
   const log = d.brief || [];
   $("briefCard").hidden = !log.length;
-  if (!log.length) return;
-  const [today, ...older] = log;
-  $("briefDate").textContent = fmtDate(today.date, { month: "short", day: "numeric" });
-  $("briefHead").textContent = today.headline;
-  $("briefItems").innerHTML = today.items.map((t) => `<li>${esc(t)}</li>`).join("");
-  $("briefMore").hidden = !older.length;
-  $("briefOld").innerHTML = older.map((e) =>
-    `<li><b>${esc(fmtDate(e.date, { month: "short", day: "numeric" }))}</b>${esc(e.headline)}${e.items.length ? " " + esc(e.items.join(" ")) : ""}</li>`).join("");
+  $("briefList").innerHTML = log.slice(0, 5).map((e) => `<li><span class="when num">${esc(fmtDate(e.date, { month: "short", day: "numeric" }))}</span>
+    <span class="what">${esc(e.headline)}${e.items.length ? `<small>${esc(e.items.join(" "))}</small>` : ""}</span></li>`).join("");
 }
 
 function renderHealth(d) {
@@ -458,15 +412,12 @@ function renderHealth(d) {
   if (!h?.checks?.length) return;
   const bad = h.checks.filter((c) => !c.ok);
   const st = $("healthStatus");
-  st.className = "status " + (bad.length ? "warn" : "good");
-  st.textContent = bad.length ? `! ${bad.length} check${bad.length > 1 ? "s" : ""} need${bad.length > 1 ? "" : "s"} attention` : "✓ All checks passing";
-  const ran = new Date(h.generated_at);
-  $("healthSub").innerHTML = `The pipeline checks its own data every day before publishing. Last run <b>${esc(ran.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }))}</b> · ${h.history_weeks} weeks of rate history.`;
+  st.className = "r " + (bad.length ? "warn" : "ok");
+  st.textContent = bad.length ? `! ${bad.length} need${bad.length > 1 ? "" : "s"} attention` : `✓ all ${h.checks.length} passing`;
   $("healthChecks").innerHTML = h.checks.map((c) =>
-    `<li class="${c.ok ? "ok" : "bad"}"><span class="ic" aria-label="${c.ok ? "passing" : "needs attention"}">${c.ok ? "✓" : "!"}</span><div>${esc(c.name)}<small>${esc(c.detail)}</small></div></li>`).join("");
-  const flags = d.trend?.flags || [];
-  $("healthFlags").innerHTML = flags.map((f) =>
-    `<div class="flag"><b>! Flagged:</b> ${esc(f.bank)} at ${f.apy.toFixed(2)}% on ${esc(fmtDate(f.date))}. ${esc(f.reason)} (${f.before.toFixed(2)}% → ${f.apy.toFixed(2)}% → ${f.after.toFixed(2)}%). Likely a data error, so it's left out of rankings and badges.</div>`).join("");
+    `<li class="${c.ok ? "ok" : "bad"}"><b class="ic" aria-label="${c.ok ? "passing" : "needs attention"}">${c.ok ? "✓" : "!"}</b><div>${esc(c.name)} <span>· ${esc(c.detail)}</span></div></li>`).join("");
+  $("healthFlags").innerHTML = (d.trend?.flags || []).map((f) =>
+    `<div class="flag"><b>! Flagged</b> ${esc(f.bank)} ${pct(f.apy)} on ${esc(fmtDate(f.date))}: ${esc(f.reason.toLowerCase())}, left out of rankings</div>`).join("");
 }
 
 // ---------- boot: a share link skips straight to the dashboard ----------
