@@ -142,22 +142,22 @@
     {
       "name": "JPMorgan Chase",
       "apy": 0.01,
-      "as_of": "2026-11-07"
+      "as_of": "2026-11-08"
     },
     {
       "name": "Bank of America",
       "apy": 0.04,
-      "as_of": "2026-11-07"
+      "as_of": "2026-11-08"
     },
     {
       "name": "Citibank",
       "apy": 0.05,
-      "as_of": "2026-11-07"
+      "as_of": "2026-11-08"
     },
     {
       "name": "Wells Fargo",
       "apy": 0.01,
-      "as_of": "2026-11-07"
+      "as_of": "2026-11-08"
     }
   ],
   "trend": {
@@ -577,13 +577,6 @@
       "url": "https://www.bankrate.com/banking/reviews/happen-bank/"
     },
     {
-      "name": "Barclays",
-      "term_months": 24,
-      "apy": 4.75,
-      "min_deposit": 0,
-      "url": "https://www.bankrate.com/banking/reviews/barclays/"
-    },
-    {
       "name": "Marcus by Goldman Sachs",
       "term_months": 24,
       "apy": 4.4,
@@ -680,7 +673,7 @@
     }
   },
   "health": {
-    "generated_at": "2026-11-07T17:19:18Z",
+    "generated_at": "2026-11-08T17:30:56Z",
     "checks": [
       {
         "name": "Rates are fresh",
@@ -710,7 +703,7 @@
       {
         "name": "Big-bank rates are fresh",
         "ok": true,
-        "detail": "as of 2026-11-07"
+        "detail": "as of 2026-11-08"
       },
       {
         "name": "dbt tests",
@@ -721,6 +714,11 @@
     "history_weeks": 52
   },
   "brief": [
+    {
+      "date": "2026-11-08",
+      "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",
+      "items": []
+    },
     {
       "date": "2026-11-07",
       "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",
