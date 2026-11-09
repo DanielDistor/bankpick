@@ -142,22 +142,22 @@
     {
       "name": "JPMorgan Chase",
       "apy": 0.01,
-      "as_of": "2026-11-08"
+      "as_of": "2026-11-09"
     },
     {
       "name": "Bank of America",
       "apy": 0.04,
-      "as_of": "2026-11-08"
+      "as_of": "2026-11-09"
     },
     {
       "name": "Citibank",
       "apy": 0.05,
-      "as_of": "2026-11-08"
+      "as_of": "2026-11-09"
     },
     {
       "name": "Wells Fargo",
       "apy": 0.01,
-      "as_of": "2026-11-08"
+      "as_of": "2026-11-09"
     }
   ],
   "trend": {
@@ -673,7 +673,7 @@
     }
   },
   "health": {
-    "generated_at": "2026-11-08T17:30:56Z",
+    "generated_at": "2026-11-09T21:52:58Z",
     "checks": [
       {
         "name": "Rates are fresh",
@@ -703,7 +703,7 @@
       {
         "name": "Big-bank rates are fresh",
         "ok": true,
-        "detail": "as of 2026-11-08"
+        "detail": "as of 2026-11-09"
       },
       {
         "name": "dbt tests",
@@ -714,6 +714,11 @@
     "history_weeks": 52
   },
   "brief": [
+    {
+      "date": "2026-11-09",
+      "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",
+      "items": []
+    },
     {
       "date": "2026-11-08",
       "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",

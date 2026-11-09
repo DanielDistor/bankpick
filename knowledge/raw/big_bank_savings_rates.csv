@@ -1,7 +1,7 @@
 bank_name,apy_pct,first_seen,last_checked
 Bank of America,0.01,2026-04-26,2026-04-26
-Bank of America,0.04,2026-11-06,2026-11-08
+Bank of America,0.04,2026-11-06,2026-11-09
 Citibank,0.04,2026-04-26,2026-04-26
-Citibank,0.05,2026-11-06,2026-11-08
-JPMorgan Chase,0.01,2026-04-26,2026-11-08
-Wells Fargo,0.01,2026-04-26,2026-11-08
+Citibank,0.05,2026-11-06,2026-11-09
+JPMorgan Chase,0.01,2026-04-26,2026-11-09
+Wells Fargo,0.01,2026-04-26,2026-11-09
