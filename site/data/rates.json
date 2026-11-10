@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-11-07",
+  "as_of": "2026-11-10",
   "fed_funds": {
     "rate": 3.88,
     "as_of": "2026-10-01"
@@ -60,18 +60,8 @@
       "badge": null
     },
     {
-      "name": "Bread Savings",
-      "apy": 4.05,
-      "promo": null,
-      "min_opening": 100,
-      "min_balance_for_apy": 0,
-      "min_monthly_deposit": 0,
-      "url": "https://www.breadfinancial.com/en/bread-savings.html",
-      "badge": null
-    },
-    {
       "name": "Vio Bank",
-      "apy": 4.01,
+      "apy": 4.06,
       "promo": {
         "apy": 4.25,
         "months": 3,
@@ -81,6 +71,16 @@
       "min_balance_for_apy": 0,
       "min_monthly_deposit": 0,
       "url": "https://www.viobank.com/",
+      "badge": null
+    },
+    {
+      "name": "Bread Savings",
+      "apy": 4.05,
+      "promo": null,
+      "min_opening": 100,
+      "min_balance_for_apy": 0,
+      "min_monthly_deposit": 0,
+      "url": "https://www.breadfinancial.com/en/bread-savings.html",
       "badge": null
     },
     {
@@ -142,22 +142,22 @@
     {
       "name": "JPMorgan Chase",
       "apy": 0.01,
-      "as_of": "2026-11-09"
+      "as_of": "2026-11-10"
     },
     {
       "name": "Bank of America",
       "apy": 0.04,
-      "as_of": "2026-11-09"
+      "as_of": "2026-11-10"
     },
     {
       "name": "Citibank",
       "apy": 0.05,
-      "as_of": "2026-11-09"
+      "as_of": "2026-11-10"
     },
     {
       "name": "Wells Fargo",
       "apy": 0.01,
-      "as_of": "2026-11-09"
+      "as_of": "2026-11-10"
     }
   ],
   "trend": {
@@ -500,10 +500,17 @@
       "url": null
     },
     {
-      "name": "BTG Pactual Bank",
+      "name": "Bask Bank",
       "term_months": 3,
-      "apy": 4.1,
-      "min_deposit": 500,
+      "apy": 4.2,
+      "min_deposit": 1000,
+      "url": null
+    },
+    {
+      "name": "Accordia Bank",
+      "term_months": 6,
+      "apy": 4.4,
+      "min_deposit": 1000,
       "url": null
     },
     {
@@ -518,13 +525,6 @@
       "term_months": 6,
       "apy": 4.4,
       "min_deposit": 100,
-      "url": null
-    },
-    {
-      "name": "Popular Direct",
-      "term_months": 6,
-      "apy": 4.35,
-      "min_deposit": 10000,
       "url": null
     },
     {
@@ -575,6 +575,13 @@
       "apy": 4.76,
       "min_deposit": 500,
       "url": "https://www.bankrate.com/banking/reviews/happen-bank/"
+    },
+    {
+      "name": "Barclays",
+      "term_months": 24,
+      "apy": 4.75,
+      "min_deposit": 0,
+      "url": "https://www.bankrate.com/banking/reviews/barclays/"
     },
     {
       "name": "Marcus by Goldman Sachs",
@@ -649,7 +656,7 @@
     {
       "name": "Synchrony Bank",
       "term_months": 60,
-      "apy": 4.75,
+      "apy": 4.8,
       "min_deposit": 0,
       "url": "https://www.bankrate.com/banking/reviews/synchrony-bank/"
     }
@@ -673,12 +680,12 @@
     }
   },
   "health": {
-    "generated_at": "2026-11-09T21:52:58Z",
+    "generated_at": "2026-11-10T19:15:10Z",
     "checks": [
       {
         "name": "Rates are fresh",
         "ok": true,
-        "detail": "Bankrate rates as of 2026-11-07"
+        "detail": "Bankrate rates as of 2026-11-10"
       },
       {
         "name": "Banks parsed",
@@ -703,7 +710,7 @@
       {
         "name": "Big-bank rates are fresh",
         "ok": true,
-        "detail": "as of 2026-11-09"
+        "detail": "as of 2026-11-10"
       },
       {
         "name": "dbt tests",
@@ -714,6 +721,13 @@
     "history_weeks": 52
   },
   "brief": [
+    {
+      "date": "2026-11-10",
+      "headline": "Peak Bank is still #1 at 4.27%.",
+      "items": [
+        "Vio Bank raised its rate 0.05 pts to 4.06%."
+      ]
+    },
     {
       "date": "2026-11-09",
       "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",

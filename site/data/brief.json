@@ -1,7 +1,7 @@
 {
   "state": {
     "last": {
-      "date": "2026-11-09",
+      "date": "2026-11-10",
       "data": {
         "banks": [
           {
@@ -30,18 +30,18 @@
             "promo": null
           },
           {
-            "name": "Bread Savings",
-            "apy": 4.05,
-            "promo": null
-          },
-          {
             "name": "Vio Bank",
-            "apy": 4.01,
+            "apy": 4.06,
             "promo": {
               "apy": 4.25,
               "months": 3,
               "expires": null
             }
+          },
+          {
+            "name": "Bread Savings",
+            "apy": 4.05,
+            "promo": null
           },
           {
             "name": "Live Oak Bank",
@@ -84,7 +84,7 @@
       }
     },
     "prev": {
-      "date": "2026-11-08",
+      "date": "2026-11-09",
       "data": {
         "banks": [
           {
@@ -168,6 +168,13 @@
     }
   },
   "log": [
+    {
+      "date": "2026-11-10",
+      "headline": "Peak Bank is still #1 at 4.27%.",
+      "items": [
+        "Vio Bank raised its rate 0.05 pts to 4.06%."
+      ]
+    },
     {
       "date": "2026-11-09",
       "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",
