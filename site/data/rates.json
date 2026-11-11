@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-11-10",
+  "as_of": "2026-11-11",
   "fed_funds": {
     "rate": 3.88,
     "as_of": "2026-10-01"
@@ -17,7 +17,7 @@
       "min_balance_for_apy": 0,
       "min_monthly_deposit": 0,
       "url": "https://www.peak.bank/peak-bank/savings",
-      "badge": "Top 3 for 5 weeks"
+      "badge": "Top 3 for 6 weeks"
     },
     {
       "name": "EverBank",
@@ -37,7 +37,7 @@
       "min_balance_for_apy": 250,
       "min_monthly_deposit": 250,
       "url": "https://www.happen.com/",
-      "badge": "Top 3 for 23 weeks"
+      "badge": "Top 3 for 24 weeks"
     },
     {
       "name": "Western State Bank",
@@ -47,7 +47,7 @@
       "min_balance_for_apy": 0,
       "min_monthly_deposit": 0,
       "url": null,
-      "badge": "Top 3 for 14 weeks"
+      "badge": "Top 3 for 15 weeks"
     },
     {
       "name": "Accordia Bank",
@@ -71,7 +71,7 @@
       "min_balance_for_apy": 0,
       "min_monthly_deposit": 0,
       "url": "https://www.viobank.com/",
-      "badge": null
+      "badge": "Rate up 0.05%"
     },
     {
       "name": "Bread Savings",
@@ -91,7 +91,7 @@
       "min_balance_for_apy": 0,
       "min_monthly_deposit": 0,
       "url": "https://www.liveoak.bank/",
-      "badge": "Steady rate for 9 weeks"
+      "badge": "Steady rate for 10 weeks"
     },
     {
       "name": "TAB Bank",
@@ -101,7 +101,7 @@
       "min_balance_for_apy": 0,
       "min_monthly_deposit": 0,
       "url": "https://www.tabbank.com/",
-      "badge": null
+      "badge": "Steady rate for 8 weeks"
     },
     {
       "name": "Bask Bank",
@@ -121,7 +121,7 @@
       "min_balance_for_apy": 0,
       "min_monthly_deposit": 0,
       "url": "https://www.populardirect.com/",
-      "badge": "Steady rate for 46 weeks"
+      "badge": "Steady rate for 47 weeks"
     },
     {
       "name": "CIT Bank",
@@ -135,29 +135,29 @@
       "min_balance_for_apy": 5000,
       "min_monthly_deposit": 0,
       "url": "https://www.cit.com/cit-bank/platinum-savings",
-      "badge": null
+      "badge": "Steady rate for 8 weeks"
     }
   ],
   "big_banks": [
     {
       "name": "JPMorgan Chase",
       "apy": 0.01,
-      "as_of": "2026-11-10"
+      "as_of": "2026-11-11"
     },
     {
       "name": "Bank of America",
       "apy": 0.04,
-      "as_of": "2026-11-10"
+      "as_of": "2026-11-11"
     },
     {
       "name": "Citibank",
       "apy": 0.05,
-      "as_of": "2026-11-10"
+      "as_of": "2026-11-11"
     },
     {
       "name": "Wells Fargo",
       "apy": 0.01,
-      "as_of": "2026-11-10"
+      "as_of": "2026-11-11"
     }
   ],
   "trend": {
@@ -421,6 +421,11 @@
         "week": "2026-11-02",
         "name": "Peak Bank",
         "apy": 4.27
+      },
+      {
+        "week": "2026-11-09",
+        "name": "Peak Bank",
+        "apy": 4.27
       }
     ],
     "fed_funds": [
@@ -565,7 +570,7 @@
     {
       "name": "First National Bank of America",
       "term_months": 18,
-      "apy": 4.4,
+      "apy": 4.5,
       "min_deposit": 1000,
       "url": "https://www.bankrate.com/banking/reviews/first-national-bank-of-america/"
     },
@@ -680,12 +685,12 @@
     }
   },
   "health": {
-    "generated_at": "2026-11-10T19:15:10Z",
+    "generated_at": "2026-11-11T19:11:23Z",
     "checks": [
       {
         "name": "Rates are fresh",
         "ok": true,
-        "detail": "Bankrate rates as of 2026-11-10"
+        "detail": "Bankrate rates as of 2026-11-11"
       },
       {
         "name": "Banks parsed",
@@ -710,7 +715,7 @@
       {
         "name": "Big-bank rates are fresh",
         "ok": true,
-        "detail": "as of 2026-11-10"
+        "detail": "as of 2026-11-11"
       },
       {
         "name": "dbt tests",
@@ -718,9 +723,14 @@
         "detail": "51 of 51 passed"
       }
     ],
-    "history_weeks": 52
+    "history_weeks": 53
   },
   "brief": [
+    {
+      "date": "2026-11-11",
+      "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",
+      "items": []
+    },
     {
       "date": "2026-11-10",
       "headline": "Peak Bank is still #1 at 4.27%.",
