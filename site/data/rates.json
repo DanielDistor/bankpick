@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-11-12",
+  "as_of": "2026-11-13",
   "fed_funds": {
     "rate": 3.88,
     "as_of": "2026-10-01"
@@ -34,7 +34,7 @@
       "apy": 4.2,
       "promo": null,
       "min_opening": 0,
-      "min_balance_for_apy": 0,
+      "min_balance_for_apy": 250,
       "min_monthly_deposit": 250,
       "url": "https://www.happen.com/",
       "badge": "Top 3 for 24 weeks"
@@ -142,22 +142,22 @@
     {
       "name": "JPMorgan Chase",
       "apy": 0.01,
-      "as_of": "2026-11-12"
+      "as_of": "2026-11-13"
     },
     {
       "name": "Bank of America",
       "apy": 0.04,
-      "as_of": "2026-11-12"
+      "as_of": "2026-11-13"
     },
     {
       "name": "Citibank",
       "apy": 0.05,
-      "as_of": "2026-11-12"
+      "as_of": "2026-11-13"
     },
     {
       "name": "Wells Fargo",
       "apy": 0.01,
-      "as_of": "2026-11-12"
+      "as_of": "2026-11-13"
     }
   ],
   "trend": {
@@ -512,17 +512,17 @@
       "url": null
     },
     {
+      "name": "Happen Bank",
+      "term_months": 6,
+      "apy": 4.6,
+      "min_deposit": 500,
+      "url": null
+    },
+    {
       "name": "Accordia Bank",
       "term_months": 6,
       "apy": 4.4,
       "min_deposit": 1000,
-      "url": null
-    },
-    {
-      "name": "Happen Bank",
-      "term_months": 6,
-      "apy": 4.4,
-      "min_deposit": 500,
       "url": null
     },
     {
@@ -584,7 +584,7 @@
     {
       "name": "Marcus by Goldman Sachs",
       "term_months": 24,
-      "apy": 4.4,
+      "apy": 4.6,
       "min_deposit": 500,
       "url": "https://www.bankrate.com/banking/reviews/marcus/"
     },
@@ -678,12 +678,12 @@
     }
   },
   "health": {
-    "generated_at": "2026-11-12T19:27:56Z",
+    "generated_at": "2026-11-13T19:07:12Z",
     "checks": [
       {
         "name": "Rates are fresh",
         "ok": true,
-        "detail": "Bankrate rates as of 2026-11-12"
+        "detail": "Bankrate rates as of 2026-11-13"
       },
       {
         "name": "Banks parsed",
@@ -708,7 +708,7 @@
       {
         "name": "Big-bank rates are fresh",
         "ok": true,
-        "detail": "as of 2026-11-12"
+        "detail": "as of 2026-11-13"
       },
       {
         "name": "dbt tests",
@@ -719,6 +719,11 @@
     "history_weeks": 53
   },
   "brief": [
+    {
+      "date": "2026-11-13",
+      "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",
+      "items": []
+    },
     {
       "date": "2026-11-12",
       "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",
@@ -749,11 +754,6 @@
     {
       "date": "2026-11-07",
       "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",
-      "items": []
-    },
-    {
-      "date": "2026-11-06",
-      "headline": "Peak Bank is #1 at 4.27%.",
       "items": []
     }
   ]
