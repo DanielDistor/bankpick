@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-11-13",
+  "as_of": "2026-11-14",
   "fed_funds": {
     "rate": 3.88,
     "as_of": "2026-10-01"
@@ -142,22 +142,22 @@
     {
       "name": "JPMorgan Chase",
       "apy": 0.01,
-      "as_of": "2026-11-13"
+      "as_of": "2026-11-14"
     },
     {
       "name": "Bank of America",
       "apy": 0.04,
-      "as_of": "2026-11-13"
+      "as_of": "2026-11-14"
     },
     {
       "name": "Citibank",
       "apy": 0.05,
-      "as_of": "2026-11-13"
+      "as_of": "2026-11-14"
     },
     {
       "name": "Wells Fargo",
       "apy": 0.01,
-      "as_of": "2026-11-13"
+      "as_of": "2026-11-14"
     }
   ],
   "trend": {
@@ -514,7 +514,7 @@
     {
       "name": "Happen Bank",
       "term_months": 6,
-      "apy": 4.6,
+      "apy": 4.5,
       "min_deposit": 500,
       "url": null
     },
@@ -580,6 +580,13 @@
       "apy": 4.76,
       "min_deposit": 500,
       "url": "https://www.bankrate.com/banking/reviews/happen-bank/"
+    },
+    {
+      "name": "Barclays",
+      "term_months": 24,
+      "apy": 4.75,
+      "min_deposit": 0,
+      "url": "https://www.bankrate.com/banking/reviews/barclays/"
     },
     {
       "name": "Marcus by Goldman Sachs",
@@ -678,12 +685,12 @@
     }
   },
   "health": {
-    "generated_at": "2026-11-13T19:07:12Z",
+    "generated_at": "2026-11-14T17:36:34Z",
     "checks": [
       {
         "name": "Rates are fresh",
         "ok": true,
-        "detail": "Bankrate rates as of 2026-11-13"
+        "detail": "Bankrate rates as of 2026-11-14"
       },
       {
         "name": "Banks parsed",
@@ -708,7 +715,7 @@
       {
         "name": "Big-bank rates are fresh",
         "ok": true,
-        "detail": "as of 2026-11-13"
+        "detail": "as of 2026-11-14"
       },
       {
         "name": "dbt tests",
@@ -719,6 +726,11 @@
     "history_weeks": 53
   },
   "brief": [
+    {
+      "date": "2026-11-14",
+      "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",
+      "items": []
+    },
     {
       "date": "2026-11-13",
       "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",
@@ -748,11 +760,6 @@
     },
     {
       "date": "2026-11-08",
-      "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",
-      "items": []
-    },
-    {
-      "date": "2026-11-07",
       "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",
       "items": []
     }
