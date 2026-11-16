@@ -1,7 +1,7 @@
 {
   "state": {
     "last": {
-      "date": "2026-11-15",
+      "date": "2026-11-16",
       "data": {
         "banks": [
           {
@@ -59,11 +59,6 @@
             "promo": null
           },
           {
-            "name": "Popular Direct",
-            "apy": 3.9,
-            "promo": null
-          },
-          {
             "name": "CIT Bank",
             "apy": 3.75,
             "promo": {
@@ -84,7 +79,7 @@
       }
     },
     "prev": {
-      "date": "2026-11-14",
+      "date": "2026-11-15",
       "data": {
         "banks": [
           {
@@ -168,6 +163,13 @@
     }
   },
   "log": [
+    {
+      "date": "2026-11-16",
+      "headline": "Peak Bank is still #1 at 4.27%.",
+      "items": [
+        "Popular Direct dropped off the list."
+      ]
+    },
     {
       "date": "2026-11-15",
       "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",

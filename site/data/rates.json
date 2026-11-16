@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-11-14",
+  "as_of": "2026-11-16",
   "fed_funds": {
     "rate": 3.88,
     "as_of": "2026-10-01"
@@ -114,16 +114,6 @@
       "badge": null
     },
     {
-      "name": "Popular Direct",
-      "apy": 3.9,
-      "promo": null,
-      "min_opening": 100,
-      "min_balance_for_apy": 0,
-      "min_monthly_deposit": 0,
-      "url": "https://www.populardirect.com/",
-      "badge": "Steady rate for 47 weeks"
-    },
-    {
       "name": "CIT Bank",
       "apy": 3.75,
       "promo": {
@@ -142,22 +132,22 @@
     {
       "name": "JPMorgan Chase",
       "apy": 0.01,
-      "as_of": "2026-11-15"
+      "as_of": "2026-11-16"
     },
     {
       "name": "Bank of America",
       "apy": 0.04,
-      "as_of": "2026-11-15"
+      "as_of": "2026-11-16"
     },
     {
       "name": "Citibank",
       "apy": 0.05,
-      "as_of": "2026-11-15"
+      "as_of": "2026-11-16"
     },
     {
       "name": "Wells Fargo",
       "apy": 0.01,
-      "as_of": "2026-11-15"
+      "as_of": "2026-11-16"
     }
   ],
   "trend": {
@@ -685,17 +675,17 @@
     }
   },
   "health": {
-    "generated_at": "2026-11-15T18:25:10Z",
+    "generated_at": "2026-11-16T21:33:38Z",
     "checks": [
       {
         "name": "Rates are fresh",
         "ok": true,
-        "detail": "Bankrate rates as of 2026-11-14"
+        "detail": "Bankrate rates as of 2026-11-16"
       },
       {
         "name": "Banks parsed",
         "ok": true,
-        "detail": "12 banks"
+        "detail": "11 banks"
       },
       {
         "name": "APYs in a sane range",
@@ -715,7 +705,7 @@
       {
         "name": "Big-bank rates are fresh",
         "ok": true,
-        "detail": "as of 2026-11-15"
+        "detail": "as of 2026-11-16"
       },
       {
         "name": "dbt tests",
@@ -726,6 +716,13 @@
     "history_weeks": 53
   },
   "brief": [
+    {
+      "date": "2026-11-16",
+      "headline": "Peak Bank is still #1 at 4.27%.",
+      "items": [
+        "Popular Direct dropped off the list."
+      ]
+    },
     {
       "date": "2026-11-15",
       "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",
@@ -757,11 +754,6 @@
       "items": [
         "Vio Bank raised its rate 0.05 pts to 4.06%."
       ]
-    },
-    {
-      "date": "2026-11-09",
-      "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",
-      "items": []
     }
   ]
 }
