@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-11-16",
+  "as_of": "2026-11-17",
   "fed_funds": {
     "rate": 3.88,
     "as_of": "2026-10-01"
@@ -9,6 +9,20 @@
     "as_of": "2026-10-01"
   },
   "banks": [
+    {
+      "name": "Vio Bank",
+      "apy": 4.4,
+      "promo": {
+        "apy": 4.4,
+        "months": 3,
+        "expires": null
+      },
+      "min_opening": 100,
+      "min_balance_for_apy": 0,
+      "min_monthly_deposit": 0,
+      "url": "https://www.viobank.com/",
+      "badge": "Rate up 0.05%"
+    },
     {
       "name": "Peak Bank",
       "apy": 4.27,
@@ -58,20 +72,6 @@
       "min_monthly_deposit": 0,
       "url": null,
       "badge": null
-    },
-    {
-      "name": "Vio Bank",
-      "apy": 4.06,
-      "promo": {
-        "apy": 4.25,
-        "months": 3,
-        "expires": null
-      },
-      "min_opening": 100,
-      "min_balance_for_apy": 0,
-      "min_monthly_deposit": 0,
-      "url": "https://www.viobank.com/",
-      "badge": "Rate up 0.05%"
     },
     {
       "name": "Bread Savings",
@@ -132,22 +132,22 @@
     {
       "name": "JPMorgan Chase",
       "apy": 0.01,
-      "as_of": "2026-11-16"
+      "as_of": "2026-11-17"
     },
     {
       "name": "Bank of America",
       "apy": 0.04,
-      "as_of": "2026-11-16"
+      "as_of": "2026-11-17"
     },
     {
       "name": "Citibank",
       "apy": 0.05,
-      "as_of": "2026-11-16"
+      "as_of": "2026-11-17"
     },
     {
       "name": "Wells Fargo",
       "apy": 0.01,
-      "as_of": "2026-11-16"
+      "as_of": "2026-11-17"
     }
   ],
   "trend": {
@@ -675,12 +675,12 @@
     }
   },
   "health": {
-    "generated_at": "2026-11-16T21:33:38Z",
+    "generated_at": "2026-11-17T20:24:07Z",
     "checks": [
       {
         "name": "Rates are fresh",
         "ok": true,
-        "detail": "Bankrate rates as of 2026-11-16"
+        "detail": "Bankrate rates as of 2026-11-17"
       },
       {
         "name": "Banks parsed",
@@ -705,7 +705,7 @@
       {
         "name": "Big-bank rates are fresh",
         "ok": true,
-        "detail": "as of 2026-11-16"
+        "detail": "as of 2026-11-17"
       },
       {
         "name": "dbt tests",
@@ -716,6 +716,13 @@
     "history_weeks": 53
   },
   "brief": [
+    {
+      "date": "2026-11-17",
+      "headline": "Vio Bank takes #1 at 4.40%, passing Peak Bank.",
+      "items": [
+        "Vio Bank raised its rate 0.34 pts to 4.40%."
+      ]
+    },
     {
       "date": "2026-11-16",
       "headline": "Peak Bank is still #1 at 4.27%.",
@@ -747,13 +754,6 @@
       "date": "2026-11-11",
       "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",
       "items": []
-    },
-    {
-      "date": "2026-11-10",
-      "headline": "Peak Bank is still #1 at 4.27%.",
-      "items": [
-        "Vio Bank raised its rate 0.05 pts to 4.06%."
-      ]
     }
   ]
 }
