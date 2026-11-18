@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-11-17",
+  "as_of": "2026-11-18",
   "fed_funds": {
     "rate": 3.88,
     "as_of": "2026-10-01"
@@ -21,7 +21,7 @@
       "min_balance_for_apy": 0,
       "min_monthly_deposit": 0,
       "url": "https://www.viobank.com/",
-      "badge": "Rate up 0.05%"
+      "badge": "Rate up 0.34%"
     },
     {
       "name": "Peak Bank",
@@ -31,7 +31,7 @@
       "min_balance_for_apy": 0,
       "min_monthly_deposit": 0,
       "url": "https://www.peak.bank/peak-bank/savings",
-      "badge": "Top 3 for 6 weeks"
+      "badge": "Top 3 for 7 weeks"
     },
     {
       "name": "EverBank",
@@ -51,7 +51,7 @@
       "min_balance_for_apy": 250,
       "min_monthly_deposit": 250,
       "url": "https://www.happen.com/",
-      "badge": "Top 3 for 24 weeks"
+      "badge": "Top 3 for 25 weeks"
     },
     {
       "name": "Western State Bank",
@@ -61,7 +61,7 @@
       "min_balance_for_apy": 0,
       "min_monthly_deposit": 0,
       "url": null,
-      "badge": "Top 3 for 15 weeks"
+      "badge": "Top 3 for 16 weeks"
     },
     {
       "name": "Accordia Bank",
@@ -91,7 +91,7 @@
       "min_balance_for_apy": 0,
       "min_monthly_deposit": 0,
       "url": "https://www.liveoak.bank/",
-      "badge": "Steady rate for 10 weeks"
+      "badge": "Steady rate for 11 weeks"
     },
     {
       "name": "TAB Bank",
@@ -101,7 +101,7 @@
       "min_balance_for_apy": 0,
       "min_monthly_deposit": 0,
       "url": "https://www.tabbank.com/",
-      "badge": "Steady rate for 8 weeks"
+      "badge": "Steady rate for 9 weeks"
     },
     {
       "name": "Bask Bank",
@@ -111,7 +111,7 @@
       "min_balance_for_apy": 0,
       "min_monthly_deposit": 0,
       "url": "https://baskbank.com/",
-      "badge": null
+      "badge": "Steady rate for 8 weeks"
     },
     {
       "name": "CIT Bank",
@@ -125,29 +125,29 @@
       "min_balance_for_apy": 5000,
       "min_monthly_deposit": 0,
       "url": "https://www.cit.com/cit-bank/platinum-savings",
-      "badge": "Steady rate for 8 weeks"
+      "badge": "Steady rate for 9 weeks"
     }
   ],
   "big_banks": [
     {
       "name": "JPMorgan Chase",
       "apy": 0.01,
-      "as_of": "2026-11-17"
+      "as_of": "2026-11-18"
     },
     {
       "name": "Bank of America",
       "apy": 0.04,
-      "as_of": "2026-11-17"
+      "as_of": "2026-11-18"
     },
     {
       "name": "Citibank",
       "apy": 0.05,
-      "as_of": "2026-11-17"
+      "as_of": "2026-11-18"
     },
     {
       "name": "Wells Fargo",
       "apy": 0.01,
-      "as_of": "2026-11-17"
+      "as_of": "2026-11-18"
     }
   ],
   "trend": {
@@ -416,6 +416,11 @@
         "week": "2026-11-09",
         "name": "Peak Bank",
         "apy": 4.27
+      },
+      {
+        "week": "2026-11-16",
+        "name": "Vio Bank",
+        "apy": 4.4
       }
     ],
     "fed_funds": [
@@ -537,10 +542,10 @@
       "url": null
     },
     {
-      "name": "Sallie Mae Bank",
+      "name": "Third Federal Savings and Loan Association of Cleveland",
       "term_months": 12,
-      "apy": 4.6,
-      "min_deposit": 2500,
+      "apy": 4.65,
+      "min_deposit": 500,
       "url": null
     },
     {
@@ -570,13 +575,6 @@
       "apy": 4.76,
       "min_deposit": 500,
       "url": "https://www.bankrate.com/banking/reviews/happen-bank/"
-    },
-    {
-      "name": "Barclays",
-      "term_months": 24,
-      "apy": 4.75,
-      "min_deposit": 0,
-      "url": "https://www.bankrate.com/banking/reviews/barclays/"
     },
     {
       "name": "Marcus by Goldman Sachs",
@@ -675,12 +673,12 @@
     }
   },
   "health": {
-    "generated_at": "2026-11-17T20:24:07Z",
+    "generated_at": "2026-11-18T19:53:24Z",
     "checks": [
       {
         "name": "Rates are fresh",
         "ok": true,
-        "detail": "Bankrate rates as of 2026-11-17"
+        "detail": "Bankrate rates as of 2026-11-18"
       },
       {
         "name": "Banks parsed",
@@ -705,7 +703,7 @@
       {
         "name": "Big-bank rates are fresh",
         "ok": true,
-        "detail": "as of 2026-11-17"
+        "detail": "as of 2026-11-18"
       },
       {
         "name": "dbt tests",
@@ -713,9 +711,14 @@
         "detail": "51 of 51 passed"
       }
     ],
-    "history_weeks": 53
+    "history_weeks": 54
   },
   "brief": [
+    {
+      "date": "2026-11-18",
+      "headline": "No rate changes. Vio Bank is still #1 at 4.40%.",
+      "items": []
+    },
     {
       "date": "2026-11-17",
       "headline": "Vio Bank takes #1 at 4.40%, passing Peak Bank.",
@@ -747,11 +750,6 @@
     },
     {
       "date": "2026-11-12",
-      "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",
-      "items": []
-    },
-    {
-      "date": "2026-11-11",
       "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",
       "items": []
     }

@@ -1,7 +1,7 @@
 {
   "state": {
     "last": {
-      "date": "2026-11-17",
+      "date": "2026-11-18",
       "data": {
         "banks": [
           {
@@ -79,9 +79,18 @@
       }
     },
     "prev": {
-      "date": "2026-11-16",
+      "date": "2026-11-17",
       "data": {
         "banks": [
+          {
+            "name": "Vio Bank",
+            "apy": 4.4,
+            "promo": {
+              "apy": 4.4,
+              "months": 3,
+              "expires": null
+            }
+          },
           {
             "name": "Peak Bank",
             "apy": 4.27,
@@ -106,15 +115,6 @@
             "name": "Accordia Bank",
             "apy": 4.1,
             "promo": null
-          },
-          {
-            "name": "Vio Bank",
-            "apy": 4.06,
-            "promo": {
-              "apy": 4.25,
-              "months": 3,
-              "expires": null
-            }
           },
           {
             "name": "Bread Savings",
@@ -158,6 +158,11 @@
     }
   },
   "log": [
+    {
+      "date": "2026-11-18",
+      "headline": "No rate changes. Vio Bank is still #1 at 4.40%.",
+      "items": []
+    },
     {
       "date": "2026-11-17",
       "headline": "Vio Bank takes #1 at 4.40%, passing Peak Bank.",
