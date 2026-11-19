@@ -132,22 +132,22 @@
     {
       "name": "JPMorgan Chase",
       "apy": 0.01,
-      "as_of": "2026-11-18"
+      "as_of": "2026-11-19"
     },
     {
       "name": "Bank of America",
       "apy": 0.04,
-      "as_of": "2026-11-18"
+      "as_of": "2026-11-19"
     },
     {
       "name": "Citibank",
       "apy": 0.05,
-      "as_of": "2026-11-18"
+      "as_of": "2026-11-19"
     },
     {
       "name": "Wells Fargo",
       "apy": 0.01,
-      "as_of": "2026-11-18"
+      "as_of": "2026-11-19"
     }
   ],
   "trend": {
@@ -542,10 +542,10 @@
       "url": null
     },
     {
-      "name": "Third Federal Savings and Loan Association of Cleveland",
+      "name": "Sallie Mae Bank",
       "term_months": 12,
       "apy": 4.65,
-      "min_deposit": 500,
+      "min_deposit": 2500,
       "url": null
     },
     {
@@ -673,7 +673,7 @@
     }
   },
   "health": {
-    "generated_at": "2026-11-18T19:53:24Z",
+    "generated_at": "2026-11-19T19:53:35Z",
     "checks": [
       {
         "name": "Rates are fresh",
@@ -703,7 +703,7 @@
       {
         "name": "Big-bank rates are fresh",
         "ok": true,
-        "detail": "as of 2026-11-18"
+        "detail": "as of 2026-11-19"
       },
       {
         "name": "dbt tests",
@@ -714,6 +714,11 @@
     "history_weeks": 54
   },
   "brief": [
+    {
+      "date": "2026-11-19",
+      "headline": "No rate changes. Vio Bank is still #1 at 4.40%.",
+      "items": []
+    },
     {
       "date": "2026-11-18",
       "headline": "No rate changes. Vio Bank is still #1 at 4.40%.",
@@ -745,11 +750,6 @@
     },
     {
       "date": "2026-11-13",
-      "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",
-      "items": []
-    },
-    {
-      "date": "2026-11-12",
       "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",
       "items": []
     }
