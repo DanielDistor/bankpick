@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-11-20",
+  "as_of": "2026-11-21",
   "fed_funds": {
     "rate": 3.88,
     "as_of": "2026-10-01"
@@ -12,7 +12,11 @@
     {
       "name": "Vio Bank",
       "apy": 4.4,
-      "promo": null,
+      "promo": {
+        "apy": 4.4,
+        "months": 3,
+        "expires": null
+      },
       "min_opening": 100,
       "min_balance_for_apy": 0,
       "min_monthly_deposit": 0,
@@ -128,22 +132,22 @@
     {
       "name": "JPMorgan Chase",
       "apy": 0.01,
-      "as_of": "2026-11-20"
+      "as_of": "2026-11-21"
     },
     {
       "name": "Bank of America",
       "apy": 0.04,
-      "as_of": "2026-11-20"
+      "as_of": "2026-11-21"
     },
     {
       "name": "Citibank",
       "apy": 0.05,
-      "as_of": "2026-11-20"
+      "as_of": "2026-11-21"
     },
     {
       "name": "Wells Fargo",
       "apy": 0.01,
-      "as_of": "2026-11-20"
+      "as_of": "2026-11-21"
     }
   ],
   "trend": {
@@ -573,6 +577,13 @@
       "url": "https://www.bankrate.com/banking/reviews/happen-bank/"
     },
     {
+      "name": "Barclays",
+      "term_months": 24,
+      "apy": 4.75,
+      "min_deposit": 0,
+      "url": "https://www.bankrate.com/banking/reviews/barclays/"
+    },
+    {
       "name": "Marcus by Goldman Sachs",
       "term_months": 24,
       "apy": 4.6,
@@ -669,12 +680,12 @@
     }
   },
   "health": {
-    "generated_at": "2026-11-20T19:33:10Z",
+    "generated_at": "2026-11-21T18:37:48Z",
     "checks": [
       {
         "name": "Rates are fresh",
         "ok": true,
-        "detail": "Bankrate rates as of 2026-11-20"
+        "detail": "Bankrate rates as of 2026-11-21"
       },
       {
         "name": "Banks parsed",
@@ -699,7 +710,7 @@
       {
         "name": "Big-bank rates are fresh",
         "ok": true,
-        "detail": "as of 2026-11-20"
+        "detail": "as of 2026-11-21"
       },
       {
         "name": "dbt tests",
@@ -710,6 +721,13 @@
     "history_weeks": 54
   },
   "brief": [
+    {
+      "date": "2026-11-21",
+      "headline": "Vio Bank is still #1 at 4.40%.",
+      "items": [
+        "Vio Bank added a promo: 4.40% for 3 months."
+      ]
+    },
     {
       "date": "2026-11-20",
       "headline": "Vio Bank is still #1 at 4.40%.",
@@ -743,11 +761,6 @@
     },
     {
       "date": "2026-11-15",
-      "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",
-      "items": []
-    },
-    {
-      "date": "2026-11-14",
       "headline": "No rate changes. Peak Bank is still #1 at 4.27%.",
       "items": []
     }
