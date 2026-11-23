@@ -1,7 +1,7 @@
 {
   "state": {
     "last": {
-      "date": "2026-11-22",
+      "date": "2026-11-23",
       "data": {
         "banks": [
           {
@@ -75,17 +75,13 @@
       }
     },
     "prev": {
-      "date": "2026-11-21",
+      "date": "2026-11-22",
       "data": {
         "banks": [
           {
             "name": "Vio Bank",
             "apy": 4.4,
-            "promo": {
-              "apy": 4.4,
-              "months": 3,
-              "expires": null
-            }
+            "promo": null
           },
           {
             "name": "Peak Bank",
@@ -154,6 +150,11 @@
     }
   },
   "log": [
+    {
+      "date": "2026-11-23",
+      "headline": "No rate changes. Vio Bank is still #1 at 4.40%.",
+      "items": []
+    },
     {
       "date": "2026-11-22",
       "headline": "Vio Bank is still #1 at 4.40%.",

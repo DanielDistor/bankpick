@@ -128,22 +128,22 @@
     {
       "name": "JPMorgan Chase",
       "apy": 0.01,
-      "as_of": "2026-11-22"
+      "as_of": "2026-11-23"
     },
     {
       "name": "Bank of America",
       "apy": 0.04,
-      "as_of": "2026-11-22"
+      "as_of": "2026-11-23"
     },
     {
       "name": "Citibank",
       "apy": 0.05,
-      "as_of": "2026-11-22"
+      "as_of": "2026-11-23"
     },
     {
       "name": "Wells Fargo",
       "apy": 0.01,
-      "as_of": "2026-11-22"
+      "as_of": "2026-11-23"
     }
   ],
   "trend": {
@@ -669,7 +669,7 @@
     }
   },
   "health": {
-    "generated_at": "2026-11-22T18:58:58Z",
+    "generated_at": "2026-11-23T23:17:32Z",
     "checks": [
       {
         "name": "Rates are fresh",
@@ -699,7 +699,7 @@
       {
         "name": "Big-bank rates are fresh",
         "ok": true,
-        "detail": "as of 2026-11-22"
+        "detail": "as of 2026-11-23"
       },
       {
         "name": "dbt tests",
@@ -710,6 +710,11 @@
     "history_weeks": 54
   },
   "brief": [
+    {
+      "date": "2026-11-23",
+      "headline": "No rate changes. Vio Bank is still #1 at 4.40%.",
+      "items": []
+    },
     {
       "date": "2026-11-22",
       "headline": "Vio Bank is still #1 at 4.40%.",
@@ -746,13 +751,6 @@
       "headline": "Vio Bank takes #1 at 4.40%, passing Peak Bank.",
       "items": [
         "Vio Bank raised its rate 0.34 pts to 4.40%."
-      ]
-    },
-    {
-      "date": "2026-11-16",
-      "headline": "Peak Bank is still #1 at 4.27%.",
-      "items": [
-        "Popular Direct dropped off the list."
       ]
     }
   ]
