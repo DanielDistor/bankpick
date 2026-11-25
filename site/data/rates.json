@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-11-22",
+  "as_of": "2026-11-25",
   "fed_funds": {
     "rate": 3.88,
     "as_of": "2026-10-01"
@@ -12,12 +12,16 @@
     {
       "name": "Vio Bank",
       "apy": 4.4,
-      "promo": null,
+      "promo": {
+        "apy": 4.4,
+        "months": 3,
+        "expires": null
+      },
       "min_opening": 100,
       "min_balance_for_apy": 0,
       "min_monthly_deposit": 0,
       "url": "https://www.viobank.com/",
-      "badge": "Rate up 0.34%"
+      "badge": null
     },
     {
       "name": "Peak Bank",
@@ -27,7 +31,7 @@
       "min_balance_for_apy": 0,
       "min_monthly_deposit": 0,
       "url": "https://www.peak.bank/peak-bank/savings",
-      "badge": "Top 3 for 7 weeks"
+      "badge": "Top 3 for 8 weeks"
     },
     {
       "name": "EverBank",
@@ -37,7 +41,7 @@
       "min_balance_for_apy": 0,
       "min_monthly_deposit": 0,
       "url": "https://www.everbank.com/",
-      "badge": null
+      "badge": "Steady rate for 8 weeks"
     },
     {
       "name": "Happen Bank",
@@ -47,7 +51,7 @@
       "min_balance_for_apy": 250,
       "min_monthly_deposit": 250,
       "url": "https://www.happen.com/",
-      "badge": "Top 3 for 25 weeks"
+      "badge": "Top 3 for 26 weeks"
     },
     {
       "name": "Western State Bank",
@@ -57,7 +61,7 @@
       "min_balance_for_apy": 0,
       "min_monthly_deposit": 0,
       "url": null,
-      "badge": "Top 3 for 16 weeks"
+      "badge": "Top 3 for 17 weeks"
     },
     {
       "name": "Accordia Bank",
@@ -87,7 +91,7 @@
       "min_balance_for_apy": 0,
       "min_monthly_deposit": 0,
       "url": "https://www.liveoak.bank/",
-      "badge": "Steady rate for 11 weeks"
+      "badge": "Steady rate for 12 weeks"
     },
     {
       "name": "TAB Bank",
@@ -97,7 +101,7 @@
       "min_balance_for_apy": 0,
       "min_monthly_deposit": 0,
       "url": "https://www.tabbank.com/",
-      "badge": "Steady rate for 9 weeks"
+      "badge": "Steady rate for 10 weeks"
     },
     {
       "name": "Bask Bank",
@@ -107,7 +111,7 @@
       "min_balance_for_apy": 0,
       "min_monthly_deposit": 0,
       "url": "https://baskbank.com/",
-      "badge": "Steady rate for 8 weeks"
+      "badge": "Steady rate for 9 weeks"
     },
     {
       "name": "CIT Bank",
@@ -121,29 +125,29 @@
       "min_balance_for_apy": 5000,
       "min_monthly_deposit": 0,
       "url": "https://www.cit.com/cit-bank/platinum-savings",
-      "badge": "Steady rate for 9 weeks"
+      "badge": "Steady rate for 10 weeks"
     }
   ],
   "big_banks": [
     {
       "name": "JPMorgan Chase",
       "apy": 0.01,
-      "as_of": "2026-11-24"
+      "as_of": "2026-11-25"
     },
     {
       "name": "Bank of America",
       "apy": 0.04,
-      "as_of": "2026-11-24"
+      "as_of": "2026-11-25"
     },
     {
       "name": "Citibank",
       "apy": 0.05,
-      "as_of": "2026-11-24"
+      "as_of": "2026-11-25"
     },
     {
       "name": "Wells Fargo",
       "apy": 0.01,
-      "as_of": "2026-11-24"
+      "as_of": "2026-11-25"
     }
   ],
   "trend": {
@@ -417,6 +421,11 @@
         "week": "2026-11-16",
         "name": "Vio Bank",
         "apy": 4.4
+      },
+      {
+        "week": "2026-11-23",
+        "name": "Vio Bank",
+        "apy": 4.4
       }
     ],
     "fed_funds": [
@@ -531,16 +540,16 @@
       "url": null
     },
     {
-      "name": "Sallie Mae Bank",
+      "name": "CFG Bank",
       "term_months": 12,
       "apy": 4.65,
-      "min_deposit": 2500,
+      "min_deposit": 500,
       "url": null
     },
     {
-      "name": "Live Oak Bank",
+      "name": "Sallie Mae Bank",
       "term_months": 12,
-      "apy": 4.6,
+      "apy": 4.65,
       "min_deposit": 2500,
       "url": null
     },
@@ -592,6 +601,13 @@
       "apy": 4.85,
       "min_deposit": 10000,
       "url": "https://www.bankrate.com/banking/reviews/popular-direct/"
+    },
+    {
+      "name": "CFG Bank",
+      "term_months": 36,
+      "apy": 4.82,
+      "min_deposit": 500,
+      "url": null
     },
     {
       "name": "Sallie Mae Bank",
@@ -662,12 +678,12 @@
     }
   },
   "health": {
-    "generated_at": "2026-11-24T21:52:26Z",
+    "generated_at": "2026-11-25T20:59:03Z",
     "checks": [
       {
         "name": "Rates are fresh",
         "ok": true,
-        "detail": "Bankrate rates as of 2026-11-22"
+        "detail": "Bankrate rates as of 2026-11-25"
       },
       {
         "name": "Banks parsed",
@@ -692,7 +708,7 @@
       {
         "name": "Big-bank rates are fresh",
         "ok": true,
-        "detail": "as of 2026-11-24"
+        "detail": "as of 2026-11-25"
       },
       {
         "name": "dbt tests",
@@ -700,9 +716,16 @@
         "detail": "51 of 51 passed"
       }
     ],
-    "history_weeks": 54
+    "history_weeks": 55
   },
   "brief": [
+    {
+      "date": "2026-11-25",
+      "headline": "Vio Bank is still #1 at 4.40%.",
+      "items": [
+        "Vio Bank added a promo: 4.40% for 3 months."
+      ]
+    },
     {
       "date": "2026-11-24",
       "headline": "No rate changes. Vio Bank is still #1 at 4.40%.",
@@ -736,11 +759,6 @@
     },
     {
       "date": "2026-11-19",
-      "headline": "No rate changes. Vio Bank is still #1 at 4.40%.",
-      "items": []
-    },
-    {
-      "date": "2026-11-18",
       "headline": "No rate changes. Vio Bank is still #1 at 4.40%.",
       "items": []
     }
