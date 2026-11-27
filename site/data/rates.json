@@ -128,22 +128,22 @@
     {
       "name": "JPMorgan Chase",
       "apy": 0.01,
-      "as_of": "2026-11-26"
+      "as_of": "2026-11-27"
     },
     {
       "name": "Bank of America",
       "apy": 0.04,
-      "as_of": "2026-11-26"
+      "as_of": "2026-11-27"
     },
     {
       "name": "Citibank",
       "apy": 0.05,
-      "as_of": "2026-11-26"
+      "as_of": "2026-11-27"
     },
     {
       "name": "Wells Fargo",
       "apy": 0.01,
-      "as_of": "2026-11-26"
+      "as_of": "2026-11-27"
     }
   ],
   "trend": {
@@ -578,13 +578,6 @@
       "url": "https://www.bankrate.com/banking/reviews/happen-bank/"
     },
     {
-      "name": "Barclays",
-      "term_months": 24,
-      "apy": 4.75,
-      "min_deposit": 0,
-      "url": "https://www.bankrate.com/banking/reviews/barclays/"
-    },
-    {
       "name": "Marcus by Goldman Sachs",
       "term_months": 24,
       "apy": 4.6,
@@ -681,7 +674,7 @@
     }
   },
   "health": {
-    "generated_at": "2026-11-26T20:51:38Z",
+    "generated_at": "2026-11-27T20:36:49Z",
     "checks": [
       {
         "name": "Rates are fresh",
@@ -711,7 +704,7 @@
       {
         "name": "Big-bank rates are fresh",
         "ok": true,
-        "detail": "as of 2026-11-26"
+        "detail": "as of 2026-11-27"
       },
       {
         "name": "dbt tests",
@@ -722,6 +715,11 @@
     "history_weeks": 55
   },
   "brief": [
+    {
+      "date": "2026-11-27",
+      "headline": "No rate changes. Vio Bank is still #1 at 4.40%.",
+      "items": []
+    },
     {
       "date": "2026-11-26",
       "headline": "Vio Bank is still #1 at 4.40%.",
@@ -758,13 +756,6 @@
       "headline": "Vio Bank is still #1 at 4.40%.",
       "items": [
         "Vio Bank added a promo: 4.40% for 3 months."
-      ]
-    },
-    {
-      "date": "2026-11-20",
-      "headline": "Vio Bank is still #1 at 4.40%.",
-      "items": [
-        "Vio Bank's promo rate ended."
       ]
     }
   ]
